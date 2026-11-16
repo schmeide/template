@@ -1,0 +1,4 @@
+# Build context is the repo root. Serves the frontend/dist that `make build` produced.
+FROM nginx:1.31-alpine
+COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+COPY frontend/dist /usr/share/nginx/html

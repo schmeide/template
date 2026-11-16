@@ -12,6 +12,7 @@ ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=deps /app ./
 COPY backend/src backend/src
+COPY backend/drizzle backend/drizzle
 USER node
 WORKDIR /app/backend
 EXPOSE 3000

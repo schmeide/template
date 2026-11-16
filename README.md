@@ -16,27 +16,29 @@ Run `make` to see every target.
 
 ## Layout
 
-| Path                      | What lives there                                                  |
-| ------------------------- | ----------------------------------------------------------------- |
-| `backend/src/db/`         | `schema.ts` (tables and derived Zod schemas), `client.ts`         |
-| `backend/src/services/`   | Business logic, one file per feature, tested against Postgres     |
-| `backend/src/router.ts`   | tRPC router: validates input, calls services, exports `AppRouter` |
-| `backend/src/app.ts`      | Fastify app: `/healthz` and tRPC under `/api/trpc`                |
-| `backend/src/server.ts`   | Entry point: reads `DATABASE_URL` and `PORT`, listens             |
-| `backend/drizzle/`        | Generated SQL migrations (committed)                              |
-| `backend/Dockerfile`      | Multi-stage, non-root backend image (build context: repo root)    |
-| `frontend/src/`           | `main.tsx` (providers), `trpc.ts`, page components                |
-| `frontend/nginx.conf`     | Serves `frontend/dist` and proxies `/api` in Compose              |
-| `compose.yaml`            | `db`, `backend`, `web`, and the `test-db` used by `make test`     |
-| `**/__tests__/*.test.ts*` | Vitest specs next to the code they test                           |
+| Path                      | What lives there                                                   |
+| ------------------------- | ------------------------------------------------------------------ |
+| `backend/src/db/`         | `schema.ts` (tables and derived Zod schemas), `client.ts`          |
+| `backend/src/services/`   | Business logic, one file per feature, tested against Postgres      |
+| `backend/src/router.ts`   | tRPC router: validates input, calls services, exports `AppRouter`  |
+| `backend/src/app.ts`      | Fastify app: `/healthz`, `/api/healthz`, tRPC under `/api/trpc`    |
+| `backend/src/server.ts`   | Entry point: reads `DATABASE_URL` and `PORT`, listens              |
+| `backend/src/migrate.ts`  | Applies `backend/drizzle` to `DATABASE_URL` (host and Compose)     |
+| `backend/drizzle/`        | Generated SQL migrations (committed)                               |
+| `backend/Dockerfile`      | Multi-stage, non-root backend image (build context: repo root)     |
+| `frontend/src/`           | `main.tsx` (providers), `trpc.ts`, page components                 |
+| `frontend/Dockerfile`     | nginx image with `frontend/dist` and `nginx.conf` baked in         |
+| `frontend/nginx.conf`     | Serves the frontend and proxies `/api` to the backend              |
+| `compose.yaml`            | `db`, `migrate`, `backend`, `web`; `dev-db` and `test-db` profiles |
+| `**/__tests__/*.test.ts*` | Vitest specs next to the code they test                            |
 
 ## Make targets
 
 ```sh
 make setup          # install nvm, the Node version in .nvmrc, and dependencies
 make serve          # hot reload: Compose Postgres + tsx watch + Vite on :5173
-make up             # full stack in Docker Compose on :8080
-make down           # stop the Compose stack
+make up             # build and (re)start the full stack in Docker Compose on :8080
+make down           # stop every Compose service of this project (keeps volumes)
 make db/generate    # generate a migration after editing schema.ts (NAME=...)
 make db/migrate     # apply migrations to $DATABASE_URL
 make test           # throwaway Postgres, migrate, run all tests, tear down
@@ -56,21 +58,53 @@ make clean          # remove build output and caches
 Docker must be running for `serve`, `up`, `down`, and `test`; the Makefile says
 so if it is not.
 
-- **`make serve`** starts Postgres in Compose, applies migrations, then runs the
-  backend with `tsx watch` and Vite. Open <http://localhost:5173>; Vite proxies
-  `/api` to the backend on `PORT` (3000), so the browser sees one origin.
-- **`make up`** builds `frontend/dist`, starts Postgres, applies migrations, and
-  runs the backend image plus nginx. Open <http://localhost:8080>.
-- **`make test`** uses a separate `test-db` service on port 5433 whose data lives
-  in tmpfs, and removes it when the run ends. Tests reach Postgres only through
-  `DATABASE_URL`, so a CI pod with a Postgres sidecar runs `make test/run`
-  instead.
+- **`make serve`** starts the `dev-db` Postgres on `DB_PORT`, applies
+  migrations, then runs the backend with `tsx watch` on `PORT` and Vite on
+  `VITE_PORT`. Open <http://localhost:5173>; Vite proxies `/api` to the backend,
+  so the browser sees one origin.
+- **`make up`** builds `frontend/dist` on the host, then builds the backend and
+  web images and starts `db`, a one-shot `migrate` service, `backend`, and
+  nginx (`web`). Open <http://localhost:8080>.
+- **`make test`** uses a separate `test-db` service on `TEST_DB_PORT` whose data
+  lives in tmpfs, and removes it when the run ends. Tests reach Postgres only
+  through `DATABASE_URL`, so a CI pod with a Postgres sidecar runs
+  `make test/run` instead.
+
+## Deploying a copy
+
+Each project is a copy of this repository run with `make up`. Several copies
+can run on one Docker host at once when each gets its own project name and port:
+
+```sh
+COMPOSE_PROJECT_NAME=acme WEB_PORT=8101 make up
+COMPOSE_PROJECT_NAME=acme make down
+```
+
+- `COMPOSE_PROJECT_NAME` (default: the directory name) prefixes every
+  container, network, volume, and image, so copies never share state.
+- `WEB_PORT` (default 8080) is the only host port the stack publishes. nginx
+  serves the frontend at `/` and proxies `/api` to the backend; the database and
+  backend are reachable only inside the project network.
+- `GET /api/healthz` returns 200 through nginx once the stack is up.
+- Migrations run inside the stack: `migrate` uses the backend image and must
+  finish before `backend` starts.
+- Run `make up` again after a code change: it rebuilds the images and replaces
+  the changed containers. The `db-data` volume, and so the data, is kept.
+- Pass the same `COMPOSE_PROJECT_NAME` to `make down`. Volumes survive it;
+  `docker compose down -v` with that name deletes them.
+- Two copies running `make test` at once need different `TEST_DB_PORT` values
+  (and different project names if they share a directory name).
 
 ## Environment
 
-| Variable       | Default                                           | Used by                 |
-| -------------- | ------------------------------------------------- | ----------------------- |
-| `DATABASE_URL` | `postgres://postgres:postgres@localhost:5432/app` | backend, migrations     |
-| `PORT`         | `3000`                                            | backend, Vite dev proxy |
+| Variable               | Default                                           | Used by                              |
+| ---------------------- | ------------------------------------------------- | ------------------------------------ |
+| `COMPOSE_PROJECT_NAME` | directory name                                    | `make up`, `make down`, `make test`  |
+| `WEB_PORT`             | `8080`                                            | `make up`: host port for nginx       |
+| `DATABASE_URL`         | `postgres://postgres:postgres@localhost:5432/app` | backend, migrations                  |
+| `PORT`                 | `3000`                                            | backend, Vite dev proxy              |
+| `VITE_PORT`            | `5173`                                            | `make serve`: Vite dev server        |
+| `DB_PORT`              | `5432`                                            | `make serve`: host port for `dev-db` |
+| `TEST_DB_PORT`         | `5433`                                            | `make test`: host port for `test-db` |
 
 Copy `.env.example` to `.env` to override; the Makefile loads it.

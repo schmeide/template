@@ -7,7 +7,7 @@
     "dev": "tsx watch src/server.ts",
     "start": "node src/server.ts",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "node src/migrate.ts"
   },
   "dependencies": {
     "@trpc/server": "^11.28.3",

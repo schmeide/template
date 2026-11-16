@@ -17,8 +17,16 @@ endif
 JS_EXEC ?= npm
 JS_INSTALL ?= install
 
-DATABASE_URL ?= postgres://postgres:postgres@localhost:5432/app
-TEST_DATABASE_URL ?= postgres://postgres:postgres@localhost:5433/app
+# Host ports. `make up` publishes only WEB_PORT (default 8080, set in compose.yaml).
+# COMPOSE_PROJECT_NAME (default: the directory name) scopes containers and volumes.
+DB_PORT ?= 5432
+TEST_DB_PORT ?= 5433
+PORT ?= 3000
+VITE_PORT ?= 5173
+export DB_PORT TEST_DB_PORT PORT VITE_PORT
+
+DATABASE_URL ?= postgres://postgres:postgres@localhost:$(DB_PORT)/app
+TEST_DATABASE_URL ?= postgres://postgres:postgres@localhost:$(TEST_DB_PORT)/app
 export DATABASE_URL
 
 NODE_VERSION := $(shell cat .nvmrc 2>/dev/null)
@@ -52,23 +60,20 @@ setup/js: ## Install Node.js via nvm and project dependencies
 	$(JS_EXEC) $(JS_INSTALL)
 
 .PHONY: serve
-serve: docker/check node_modules ## Hot reload: Compose Postgres, tsx watch, and Vite on :5173
-	docker compose up -d --wait db
+serve: docker/check node_modules ## Hot reload: Postgres on DB_PORT, tsx watch on PORT, Vite on VITE_PORT
+	docker compose --profile serve up -d --wait dev-db
 	$(MAKE) db/migrate
-	echo "App: http://localhost:5173 (Postgres keeps running; 'make down' stops it)"
+	echo "App: http://localhost:$(VITE_PORT) (Postgres keeps running; 'make down' stops it)"
 	$(JS_EXEC) run dev
 
 .PHONY: up
-up: docker/check build ## Run the full stack in Docker Compose on :8080
-	# ponytail: migrations run from the host, not from the backend image; add a migrate step to the image or a Job once deploys need it
-	docker compose up -d --wait db
-	$(MAKE) db/migrate
-	docker compose up -d --build --wait
-	echo "App: http://localhost:8080 ('make down' stops it)"
+up: docker/check build ## Build and (re)start the full stack on WEB_PORT (default 8080), migrating in-stack
+	docker compose up -d --build --wait --remove-orphans
+	echo "App: http://localhost:$${WEB_PORT:-8080} ('make down' stops it)"
 
 .PHONY: down
-down: docker/check ## Stop the Docker Compose stack
-	docker compose --profile test down
+down: docker/check ## Stop every Compose service in this project (volumes are kept)
+	docker compose --profile '*' down
 
 ##@ Database
 
@@ -98,7 +103,7 @@ clean: ## Clean build artifacts
 ##@ Testing
 
 .PHONY: test
-test: docker/check node_modules ## Run tests once against a throwaway Compose Postgres
+test: docker/check node_modules ## Run tests once against a throwaway Compose Postgres on TEST_DB_PORT
 	trap 'docker compose --profile test down test-db >/dev/null 2>&1' EXIT
 	docker compose --profile test up -d --wait test-db
 	$(MAKE) test/run DATABASE_URL=$(TEST_DATABASE_URL)

@@ -36,8 +36,8 @@ describe("notes router", () => {
 });
 
 describe("http", () => {
-  it("serves /healthz", async () => {
-    const response = await app.inject({ method: "GET", url: "/healthz" });
+  it.each(["/healthz", "/api/healthz"])("serves %s", async (url) => {
+    const response = await app.inject({ method: "GET", url });
 
     expect(response.statusCode).toBe(200);
   });

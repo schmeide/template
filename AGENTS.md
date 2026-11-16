@@ -9,6 +9,23 @@ and a Fastify + tRPC + Drizzle backend on Postgres, in one repository as npm
 workspaces (`frontend/`, `backend/`). It starts with one sample feature,
 notes; build new features the same way.
 
+## Building a feature (start here)
+
+- Notes is a sample that proves every layer works. Replace it with the
+  project's real features: delete its table, service, router entry, page, and
+  tests once a real feature exists, and generate a migration that drops it.
+- A new feature goes through the same layers, one file or entry per layer:
+  1. Table and derived Zod schemas in `backend/src/db/schema.ts`, then
+     `make db/generate NAME=create_<feature>`.
+  2. Business logic in `backend/src/services/<feature>.ts`, with a test in
+     `backend/src/services/__tests__/<feature>.test.ts`.
+  3. A sub-router in `backend/src/router.ts`, covered by
+     `backend/src/__tests__/app.test.ts` or a sibling test file.
+  4. A page component in `frontend/src/<Feature>.tsx`, rendered from
+     `frontend/src/main.tsx`, with a test in `frontend/src/__tests__/`.
+- Before finishing, `make check`, `make test`, and `make build` must all pass,
+  and `make format` must leave no diff.
+
 ## Key rule (always)
 
 - Respect the linting and formatting conventions of the various linting and
@@ -34,7 +51,7 @@ notes; build new features the same way.
 | `make fix`                | Apply ESLint, Prettier, and markdownlint fixes            |
 | `make db/generate NAME=x` | Generate a migration from `backend/src/db/schema.ts`      |
 | `make db/migrate`         | Apply migrations to `$DATABASE_URL`                       |
-| `make serve` / `make up`  | Run the app (the developer does this, not you)            |
+| `make serve` / `make up`  | Run the app (the developer or platform does this)         |
 
 ## Development assumptions
 
@@ -52,8 +69,9 @@ notes; build new features the same way.
 - `backend/src/router.ts`: the tRPC router. Nest one sub-router per feature
   (`notes: t.router({...})`). Split into `backend/src/routers/<feature>.ts`
   only once the file is hard to read.
-- `backend/src/app.ts`: Fastify wiring. `server.ts` is the entry point and the
-  only place that reads environment variables.
+- `backend/src/app.ts`: Fastify wiring, including `/healthz` and
+  `/api/healthz`. `server.ts` (the entry point) and `migrate.ts` are the only
+  places that read environment variables.
 - `backend/drizzle/`: generated migrations. Commit them; never hand-edit them.
 - `frontend/src/<Page>.tsx`: one component per page or section, using
   `useTRPC()` with TanStack Query's `useQuery`/`useMutation`.
@@ -147,3 +165,20 @@ For a pure refactor, run the existing tests before and after.
 - Configuration comes from the environment: `DATABASE_URL` and `PORT`.
   Document new variables in `.env.example` and the README. Only
   `VITE_`-prefixed variables reach frontend code, and the bundle is public.
+
+## Deployment contract (do not break)
+
+The platform deploys each project with `make up`, several on one Docker host,
+using the variables in the README's "Deploying a copy" section. Keep these true:
+
+- `make up` honors `COMPOSE_PROJECT_NAME` and `WEB_PORT`, and `make down`
+  honors `COMPOSE_PROJECT_NAME`. Never set `container_name`, fixed network or
+  volume names, or `image` names in `compose.yaml`; Compose scopes them per
+  project.
+- `web` is the only service in the `make up` stack that publishes a host port.
+  Do not add `ports` to `db`, `migrate`, `backend`, or any new service.
+- `GET /api/healthz` returns 200 through nginx, and `/` serves the frontend.
+- Migrations run inside the stack via the `migrate` service; `backend` waits
+  for it. Running `make up` again rebuilds and replaces containers and keeps the
+  database volume.
+- `make test` honors `TEST_DB_PORT`; `make test/run` needs only `DATABASE_URL`.
