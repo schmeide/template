@@ -149,8 +149,10 @@ For a pure refactor, run the existing tests before and after.
 
 ## Pull request and commit conventions (always follow this)
 
-- The description should be lowercase, imperative mood:
-  `<issue number>: add null check`, not `<issue number>: Added null check`.
+- The title of a pull request is a conventional commit, in lowercase imperative mood, with the issue number as the
+  scope: `feat(<issue number>): add null check`, not `<issue number>: Added null check`. `type` is one of `feat`,
+  `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore` or `revert`. The PR title becomes the
+  commit subject when the PR is squash-merged, and the PR title workflow fails any other title.
 - Include the issue number in the PR body (`Closes #N`).
 - Branch names should reflect the issue: `123_short-description`.
 - Commits must be signed off (`git commit -s`).
