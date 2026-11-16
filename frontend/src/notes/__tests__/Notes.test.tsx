@@ -3,9 +3,9 @@ import { createTRPCClient, type TRPCLink } from "@trpc/client";
 import { observable } from "@trpc/server/observable";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { AppRouter } from "../../../backend/src/router.ts";
+import type { AppRouter } from "../../../../backend/src/router.ts";
 import { Notes } from "../Notes.tsx";
-import { TRPCProvider } from "../trpc.ts";
+import { TRPCProvider } from "../../trpc.ts";
 
 type Note = { readonly id: number; readonly body: string; readonly createdAt: Date };
 

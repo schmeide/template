@@ -1,8 +1,11 @@
 # Schmeide project template
 
 Every Schmeide project starts as a copy of this repository. It is a fixed,
-full-stack TypeScript stack with one sample feature (notes) that passes through
-every layer, so agents add features into a shape that already works.
+full-stack TypeScript stack whose features are grouped into shapes: working
+starting points for common kinds of app. A project keeps the shapes it needs
+and deletes the rest (`make shape/keep`), so agents build on code that already
+works. Today the only shape is a sample, notes, that passes through every layer.
+See [`shapes/README.md`](shapes/README.md).
 
 | Layer    | Tools                                                                |
 | -------- | -------------------------------------------------------------------- |
@@ -16,21 +19,23 @@ Run `make` to see every target.
 
 ## Layout
 
-| Path                      | What lives there                                                   |
-| ------------------------- | ------------------------------------------------------------------ |
-| `backend/src/db/`         | `schema.ts` (tables and derived Zod schemas), `client.ts`          |
-| `backend/src/services/`   | Business logic, one file per feature, tested against Postgres      |
-| `backend/src/router.ts`   | tRPC router: validates input, calls services, exports `AppRouter`  |
-| `backend/src/app.ts`      | Fastify app: `/healthz`, `/api/healthz`, tRPC under `/api/trpc`    |
-| `backend/src/server.ts`   | Entry point: reads `DATABASE_URL` and `PORT`, listens              |
-| `backend/src/migrate.ts`  | Applies `backend/drizzle` to `DATABASE_URL` (host and Compose)     |
-| `backend/drizzle/`        | Generated SQL migrations (committed)                               |
-| `backend/Dockerfile`      | Multi-stage, non-root backend image (build context: repo root)     |
-| `frontend/src/`           | `main.tsx` (providers), `trpc.ts`, page components                 |
-| `frontend/Dockerfile`     | nginx image with `frontend/dist` and `nginx.conf` baked in         |
-| `frontend/nginx.conf`     | Serves the frontend and proxies `/api` to the backend              |
-| `compose.yaml`            | `db`, `migrate`, `backend`, `web`; `dev-db` and `test-db` profiles |
-| `**/__tests__/*.test.ts*` | Vitest specs next to the code they test                            |
+| Path                      | What lives there                                                    |
+| ------------------------- | ------------------------------------------------------------------- |
+| `backend/src/db/`         | `schema/<feature>.ts` (tables and derived Zod schemas), `client.ts` |
+| `backend/src/services/`   | Business logic, one file per feature, tested against Postgres       |
+| `backend/src/routers/`    | One tRPC sub-router per feature: validates input, calls services    |
+| `backend/src/router.ts`   | One line per sub-router; exports `AppRouter`                        |
+| `backend/src/app.ts`      | Fastify app: `/healthz`, `/api/healthz`, tRPC under `/api/trpc`     |
+| `backend/src/server.ts`   | Entry point: reads `DATABASE_URL` and `PORT`, listens               |
+| `backend/src/migrate.ts`  | Applies `backend/drizzle` to `DATABASE_URL` (host and Compose)      |
+| `backend/drizzle/`        | Generated SQL migrations (committed)                                |
+| `backend/Dockerfile`      | Multi-stage, non-root backend image (build context: repo root)      |
+| `frontend/src/`           | `main.tsx`, `App.tsx` (menu), `pages.ts`, one folder per feature    |
+| `shapes/`                 | Shape manifests and tooling; absent from a project                  |
+| `frontend/Dockerfile`     | nginx image with `frontend/dist` and `nginx.conf` baked in          |
+| `frontend/nginx.conf`     | Serves the frontend and proxies `/api` to the backend               |
+| `compose.yaml`            | `db`, `migrate`, `backend`, `web`; `dev-db` and `test-db` profiles  |
+| `**/__tests__/*.test.ts*` | Vitest specs next to the code they test                             |
 
 ## Make targets
 
@@ -39,7 +44,7 @@ make setup          # install nvm, the Node version in .nvmrc, and dependencies
 make serve          # hot reload: Compose Postgres + tsx watch + Vite on :5173
 make up             # build and (re)start the full stack in Docker Compose on :8080
 make down           # stop every Compose service of this project (keeps volumes)
-make db/generate    # generate a migration after editing schema.ts (NAME=...)
+make db/generate    # generate a migration after editing db/schema/ (NAME=...)
 make db/migrate     # apply migrations to $DATABASE_URL
 make test           # throwaway Postgres, migrate, run all tests, tear down
 make test/watch     # same, in watch mode
@@ -51,6 +56,10 @@ make format         # Prettier only
 make deps           # npm install
 make upgrade        # bump every dependency to its latest version
 make clean          # remove build output and caches
+make shape/list     # list the shapes (these four exist only in the template)
+make shape/keep     # make this copy a project with only NAMES="a b"
+make shape/check    # prove each shape alone passes check, test, and build
+make shape/registries  # rewrite router.ts and pages.ts from the manifests
 ```
 
 ## Local development

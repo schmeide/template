@@ -51,3 +51,6 @@ jobs:
 
       - name: Build
         run: make build
+
+      - name: Check each shape as its own project
+        run: make shape/check
