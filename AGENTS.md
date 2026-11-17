@@ -6,23 +6,31 @@ These instructions tell coding agents how to work in this repository.
 
 This is a Schmeide project: a TypeScript web app with a React + Vite frontend
 and a Fastify + tRPC + Drizzle backend on Postgres, in one repository as npm
-workspaces (`frontend/`, `backend/`). It starts with one sample feature,
-notes; build new features the same way.
+workspaces (`frontend/`, `backend/`). It starts with working features; build
+new ones the same way.
+
+If a `shapes/` directory exists, you are in the template itself, not in a
+project. Read `shapes/README.md` before changing anything: every feature there
+belongs to a shape, and a project is made by keeping some shapes and deleting
+the rest.
 
 ## Building a feature (start here)
 
-- Notes is a sample that proves every layer works. Replace it with the
-  project's real features: delete its table, service, router entry, page, and
-  tests once a real feature exists, and generate a migration that drops it.
+- If the notes feature is present, it is a sample that proves every layer
+  works. Replace it with the project's real features: delete its table,
+  service, router, page, and tests once a real feature exists, and generate a
+  migration that drops it.
 - A new feature goes through the same layers, one file or entry per layer:
-  1. Table and derived Zod schemas in `backend/src/db/schema.ts`, then
-     `make db/generate NAME=create_<feature>`.
+  1. Table and derived Zod schemas in `backend/src/db/schema/<feature>.ts`,
+     then `make db/generate NAME=create_<feature>`.
   2. Business logic in `backend/src/services/<feature>.ts`, with a test in
      `backend/src/services/__tests__/<feature>.test.ts`.
-  3. A sub-router in `backend/src/router.ts`, covered by
-     `backend/src/__tests__/app.test.ts` or a sibling test file.
-  4. A page component in `frontend/src/<Feature>.tsx`, rendered from
-     `frontend/src/main.tsx`, with a test in `frontend/src/__tests__/`.
+  3. A sub-router in `backend/src/routers/<feature>.ts`, with a test in
+     `backend/src/routers/__tests__/<feature>.test.ts`, and one line for it in
+     `backend/src/router.ts`.
+  4. Page components in `frontend/src/<feature>/`, with tests in
+     `frontend/src/<feature>/__tests__/`, and one entry per page in
+     `frontend/src/pages.ts`.
 - Before finishing, `make check`, `make test`, and `make build` must all pass,
   and `make format` must leave no diff.
 
@@ -49,7 +57,7 @@ notes; build new features the same way.
 | `make check`              | ESLint, `tsc` for both workspaces, Prettier, markdownlint |
 | `make build`              | Typecheck and bundle `frontend/dist`                      |
 | `make fix`                | Apply ESLint, Prettier, and markdownlint fixes            |
-| `make db/generate NAME=x` | Generate a migration from `backend/src/db/schema.ts`      |
+| `make db/generate NAME=x` | Generate a migration from `backend/src/db/schema/`        |
 | `make db/migrate`         | Apply migrations to `$DATABASE_URL`                       |
 | `make serve` / `make up`  | Run the app (the developer or platform does this)         |
 
@@ -62,20 +70,28 @@ notes; build new features the same way.
 
 ## Structure (follow this)
 
-- `backend/src/db/schema.ts`: Drizzle tables and the Zod schemas derived from
-  them with `drizzle-zod`, plus their inferred types.
+- `backend/src/db/schema/<feature>.ts`: Drizzle tables and the Zod schemas
+  derived from them with `drizzle-zod`, plus their inferred types. One file per
+  feature; drizzle-kit reads the whole directory.
 - `backend/src/services/<feature>.ts`: business logic. Plain functions that take
   `db` as their first parameter. No HTTP or tRPC types here.
-- `backend/src/router.ts`: the tRPC router. Nest one sub-router per feature
-  (`notes: t.router({...})`). Split into `backend/src/routers/<feature>.ts`
-  only once the file is hard to read.
+- `backend/src/routers/<feature>.ts`: the feature's tRPC sub-router, built with
+  `router` and `procedure` from `backend/src/trpc.ts`.
+- `backend/src/router.ts`: the app router. One line per feature
+  (`notes: notesRouter`) and nothing else.
 - `backend/src/app.ts`: Fastify wiring, including `/healthz` and
   `/api/healthz`. `server.ts` (the entry point) and `migrate.ts` are the only
   places that read environment variables.
 - `backend/drizzle/`: generated migrations. Commit them; never hand-edit them.
-- `frontend/src/<Page>.tsx`: one component per page or section, using
-  `useTRPC()` with TanStack Query's `useQuery`/`useMutation`.
+- `frontend/src/<feature>/`: the feature's components, one per page or section,
+  using `useTRPC()` with TanStack Query's `useQuery`/`useMutation`.
+- `frontend/src/pages.ts`: one entry per page (`path`, `title`, `Component`), in
+  menu order. The first entry is the home page.
+- `frontend/src/App.tsx`: shows the page named in the address (`#/<path>`) and a
+  menu when there is more than one page. No feature content.
 - `frontend/src/main.tsx`: providers and the tRPC client. No page content.
+- Keep a feature inside its own files. Another feature may import from it, but
+  the only shared files a feature touches are `router.ts` and `pages.ts`.
 - Tests live in `__tests__/` beside the code: `<name>.test.ts` or `.test.tsx`.
 
 ## API and service split
@@ -101,7 +117,8 @@ and reusable from scripts and jobs.
   `backend/src/router.ts`. Never import backend runtime code into the frontend
   and never redeclare API types there. There is no shared package; do not add
   one until code genuinely needs to run on both sides.
-- Schema change workflow: edit `schema.ts`, run `make db/generate NAME=...`,
+- Schema change workflow: edit the feature's file in `backend/src/db/schema/`,
+  run `make db/generate NAME=...`,
   commit the generated SQL and `meta/` files with the change.
 
 ## Test-Driven Development (strongly preferred)
@@ -125,9 +142,9 @@ For a pure refactor, run the existing tests before and after.
 - Tests share one database and run in parallel. Do not truncate tables or
   assert on total counts; create rows with unique values (`randomUUID()`) and
   assert on those.
-- Component tests use a fake terminating tRPC link (see
-  `frontend/src/__tests__/Notes.test.tsx`), not network mocks. Query by role
-  and label, not by class names or DOM structure.
+- Component tests use a fake terminating tRPC link (see an existing test under
+  `frontend/src/<feature>/__tests__/`), not network mocks. Query by role and
+  label, not by class names or DOM structure.
 
 ## Code style
 

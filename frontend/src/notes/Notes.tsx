@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { FormEvent } from "react";
-import { useTRPC } from "./trpc.ts";
+import { useTRPC } from "../trpc.ts";
 
 export function Notes() {
   const trpc = useTRPC();

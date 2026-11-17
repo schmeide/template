@@ -1,0 +1,13 @@
+{
+  "requires": [],
+  "files": [
+    "backend/src/db/schema/notes.ts",
+    "backend/src/services/notes.ts",
+    "backend/src/services/__tests__/notes.test.ts",
+    "backend/src/routers/notes.ts",
+    "backend/src/routers/__tests__/notes.test.ts",
+    "frontend/src/notes/"
+  ],
+  "routers": [{ "key": "notes", "name": "notesRouter", "from": "./routers/notes.ts" }],
+  "pages": [{ "path": "notes", "title": "Notes", "name": "Notes", "from": "./notes/Notes.tsx" }]
+}

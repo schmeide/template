@@ -170,6 +170,9 @@ fix: fix/ts ## Fix lint and format errors
 fix/ts: node_modules ## Fix lint and format errors
 	$(JS_EXEC) run fix
 
+# Shape targets exist only in the template itself, while shapes/ is present.
+-include shapes/shape.mk
+
 ##@ Helpers
 
 # Installs dependencies only when node_modules is missing.

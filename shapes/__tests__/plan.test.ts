@@ -1,0 +1,113 @@
+import { describe, expect, it } from "vitest";
+import {
+  filesToDelete,
+  problems,
+  renderPages,
+  renderRouter,
+  resolve,
+  type Shape,
+  type Shapes,
+} from "../plan.ts";
+
+const shape = (name: string, requires: readonly string[] = []): Shape => ({
+  requires,
+  files: [`backend/src/services/${name}.ts`, `frontend/src/${name}/`],
+  routers: [{ key: name, name: `${name}Router`, from: `./routers/${name}.ts` }],
+  pages: [
+    { path: name, title: name.toUpperCase(), name: `${name}Page`, from: `./${name}/Page.tsx` },
+  ],
+});
+
+const shapes: Shapes = {
+  customers: shape("customers"),
+  invoices: shape("invoices", ["customers"]),
+  notes: shape("notes"),
+  portal: shape("portal", ["invoices"]),
+};
+
+describe("resolve", () => {
+  it("keeps the named shapes in the order given, then what they require", () => {
+    expect(resolve(shapes, ["notes", "portal"])).toEqual([
+      "notes",
+      "portal",
+      "invoices",
+      "customers",
+    ]);
+  });
+
+  it("keeps a shape once when it is both named and required", () => {
+    expect(resolve(shapes, ["customers", "invoices"])).toEqual(["customers", "invoices"]);
+  });
+
+  it("rejects a name that is not a shape and lists the real ones", () => {
+    expect(() => resolve(shapes, ["invoice"])).toThrow(
+      "invoice is not a shape. Shapes: customers, invoices, notes, portal"
+    );
+  });
+});
+
+describe("filesToDelete", () => {
+  it("lists the files of every shape that is not kept", () => {
+    expect(filesToDelete(shapes, ["invoices", "customers"])).toEqual([
+      "backend/src/services/notes.ts",
+      "frontend/src/notes/",
+      "backend/src/services/portal.ts",
+      "frontend/src/portal/",
+    ]);
+  });
+});
+
+describe("problems", () => {
+  it("finds none in sound manifests", () => {
+    expect(problems(shapes)).toEqual([]);
+  });
+
+  it("reports an unknown requirement and anything claimed twice", () => {
+    const broken: Shapes = {
+      notes: shape("notes", ["missing"]),
+      copy: { ...shape("notes"), requires: [] },
+    };
+
+    expect(problems(broken)).toEqual([
+      "notes requires missing, which is not a shape",
+      "file backend/src/services/notes.ts is claimed more than once",
+      "file frontend/src/notes/ is claimed more than once",
+      "router key notes is claimed more than once",
+      "page path notes is claimed more than once",
+    ]);
+  });
+});
+
+describe("renderRouter", () => {
+  it("nests one sub-router per kept shape", () => {
+    expect(renderRouter(shapes, ["invoices", "customers"]))
+      .toBe(`import { customersRouter } from "./routers/customers.ts";
+import { invoicesRouter } from "./routers/invoices.ts";
+import { router } from "./trpc.ts";
+
+// One sub-router per feature.
+export const appRouter = router({
+  invoices: invoicesRouter,
+  customers: customersRouter,
+});
+
+export type AppRouter = typeof appRouter;
+`);
+  });
+});
+
+describe("renderPages", () => {
+  it("lists the pages of kept shapes in menu order", () => {
+    expect(renderPages(shapes, ["invoices", "customers"]))
+      .toBe(`import type { Page } from "./App.tsx";
+import { customersPage } from "./customers/Page.tsx";
+import { invoicesPage } from "./invoices/Page.tsx";
+
+// One entry per page, in menu order. The first is the home page.
+export const pages: readonly Page[] = [
+  { path: "invoices", title: "INVOICES", Component: invoicesPage },
+  { path: "customers", title: "CUSTOMERS", Component: customersPage },
+];
+`);
+  });
+});
