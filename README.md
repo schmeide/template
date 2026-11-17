@@ -32,7 +32,7 @@ Run `make` to see every target.
 | `backend/Dockerfile`      | Multi-stage, non-root backend image (build context: repo root)      |
 | `frontend/src/`           | `main.tsx`, `App.tsx` (menu), `pages.ts`, one folder per feature    |
 | `shapes/`                 | Shape manifests and tooling; absent from a project                  |
-| `frontend/Dockerfile`     | nginx image with `frontend/dist` and `nginx.conf` baked in          |
+| `frontend/Dockerfile`     | Builds the frontend in a node stage, serves it with nginx           |
 | `frontend/nginx.conf`     | Serves the frontend and proxies `/api` to the backend               |
 | `compose.yaml`            | `db`, `migrate`, `backend`, `web`; `dev-db` and `test-db` profiles  |
 | `**/__tests__/*.test.ts*` | Vitest specs next to the code they test                             |
@@ -71,9 +71,9 @@ so if it is not.
   migrations, then runs the backend with `tsx watch` on `PORT` and Vite on
   `VITE_PORT`. Open <http://localhost:5173>; Vite proxies `/api` to the backend,
   so the browser sees one origin.
-- **`make up`** builds `frontend/dist` on the host, then builds the backend and
-  web images and starts `db`, a one-shot `migrate` service, `backend`, and
-  nginx (`web`). Open <http://localhost:8080>.
+- **`make up`** typechecks on the host, then builds the backend and web images
+  (the web image bundles the frontend in its own build stage) and starts `db`, a
+  one-shot `migrate` service, `backend`, and nginx (`web`). Open <http://localhost:8080>.
 - **`make test`** uses a separate `test-db` service on `TEST_DB_PORT` whose data
   lives in tmpfs, and removes it when the run ends. Tests reach Postgres only
   through `DATABASE_URL`: with `TEST_DATABASE_URL` exported (a CI pod with a
