@@ -3,6 +3,7 @@ import { customersRouter } from "./routers/customers.ts";
 import { dealsRouter } from "./routers/deals.ts";
 import { invoicesRouter } from "./routers/invoices.ts";
 import { notesRouter } from "./routers/notes.ts";
+import { requestsRouter } from "./routers/requests.ts";
 import { router } from "./trpc.ts";
 
 // One sub-router per feature.
@@ -12,6 +13,7 @@ export const appRouter = router({
   deals: dealsRouter,
   invoices: invoicesRouter,
   notes: notesRouter,
+  requests: requestsRouter,
 });
 
 export type AppRouter = typeof appRouter;
