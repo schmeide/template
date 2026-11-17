@@ -1,0 +1,14 @@
+{
+  "requires": ["customers"],
+  "files": [
+    "backend/src/db/schema/pipeline.ts",
+    "backend/src/services/pipeline.ts",
+    "backend/src/services/__tests__/pipeline.test.ts",
+    "backend/src/routers/deals.ts",
+    "backend/src/routers/__tests__/deals.test.ts",
+    "frontend/src/deals/",
+    "docs/shapes/deals.md"
+  ],
+  "routers": [{ "key": "deals", "name": "dealsRouter", "from": "./routers/deals.ts" }],
+  "pages": [{ "path": "deals", "title": "Deals", "name": "Deals", "from": "./deals/Deals.tsx" }]
+}

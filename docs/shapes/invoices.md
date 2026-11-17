@@ -6,7 +6,7 @@ receipts, credit notes and proposals are the same shape with different names, fi
 
 ## What it has
 
-- **Customers** (`customers` table, Customers page): name, email, phone and address, with a list and a detail page.
+- **Customers**: from the `customers` shape, which this one requires. See [customers.md](customers.md).
 - **Documents** (`documents`, `document_lines`, `payments` tables, Invoices page): a list with a status filter and
   search, an editor with add, remove and reorder lines and live totals, a read-only view, payments, a print-ready
   layout and a public share link.
