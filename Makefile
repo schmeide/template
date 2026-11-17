@@ -102,11 +102,17 @@ clean: ## Clean build artifacts
 
 ##@ Testing
 
+# A TEST_DATABASE_URL from the environment (a build pod's Postgres sidecar) is used as is, without Docker.
 .PHONY: test
-test: docker/check node_modules ## Run tests once against a throwaway Compose Postgres on TEST_DB_PORT
+ifeq ($(origin TEST_DATABASE_URL),environment)
+test: node_modules ## Run tests once against a throwaway Compose Postgres, or an exported TEST_DATABASE_URL
+	$(MAKE) test/run DATABASE_URL=$(TEST_DATABASE_URL)
+else
+test: docker/check node_modules ## Run tests once against a throwaway Compose Postgres, or an exported TEST_DATABASE_URL
 	trap 'docker compose --profile test down test-db >/dev/null 2>&1' EXIT
 	docker compose --profile test up -d --wait test-db
 	$(MAKE) test/run DATABASE_URL=$(TEST_DATABASE_URL)
+endif
 
 .PHONY: test/watch
 test/watch: docker/check node_modules ## Run tests in watch mode against a throwaway Compose Postgres

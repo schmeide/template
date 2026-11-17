@@ -183,4 +183,7 @@ using the variables in the README's "Deploying a copy" section. Keep these true:
 - Migrations run inside the stack via the `migrate` service; `backend` waits
   for it. Running `make up` again rebuilds and replaces containers and keeps the
   database volume.
-- `make test` honors `TEST_DB_PORT`; `make test/run` needs only `DATABASE_URL`.
+- `make test` honors `TEST_DB_PORT`, and an exported `TEST_DATABASE_URL` replaces
+  Compose and Docker; `make test/run` needs only `DATABASE_URL`.
+- The images run as non-root numeric users (`web` UID 101 on 8080, `backend`
+  UID 1000 on 3000) so they pass Kubernetes `restricted` pod security.
