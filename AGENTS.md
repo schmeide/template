@@ -34,6 +34,29 @@ the rest.
 - Before finishing, `make check`, `make test`, and `make build` must all pass,
   and `make format` must leave no diff.
 
+## Design skills (all frontend work)
+
+`.claude/skills/` vendors the design skills from
+[jakubkrehel/skills](https://github.com/jakubkrehel/skills). The upstream
+commit is in `.claude/skills/UPSTREAM_COMMIT`. Do not edit them here; they are
+updated from home-schmeide with `make skills/update`.
+
+Any change under `frontend/` that a person sees (markup, styles, components,
+copy, motion) is designed and built with them:
+
+| Work                                | Skills                                                             |
+| ----------------------------------- | ------------------------------------------------------------------ |
+| Building from a Figma file or image | `build-design`                                                     |
+| Layout, type, color and polish      | `better-layout`, `better-typography`, `better-colors`, `better-ui` |
+| Copy                                | `better-writing`                                                   |
+| The accessibility pass              | `better-accessibility`                                             |
+| Reviewing a finished screen or flow | `better-interface`                                                 |
+
+`interface-review`, `variant`, `state-machine` and `break` only start from a
+slash command a person types. When you work on your own, read the skill's
+`SKILL.md` and follow it instead. Before finishing a change that touched the
+UI, follow `.claude/skills/interface-review/SKILL.md`.
+
 ## Key rule (always)
 
 - Respect the linting and formatting conventions of the various linting and
