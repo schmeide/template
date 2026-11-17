@@ -67,8 +67,8 @@ so if it is not.
   nginx (`web`). Open <http://localhost:8080>.
 - **`make test`** uses a separate `test-db` service on `TEST_DB_PORT` whose data
   lives in tmpfs, and removes it when the run ends. Tests reach Postgres only
-  through `DATABASE_URL`, so a CI pod with a Postgres sidecar runs
-  `make test/run` instead.
+  through `DATABASE_URL`: with `TEST_DATABASE_URL` exported (a CI pod with a
+  Postgres sidecar), `make test` uses that database and needs no Docker.
 
 ## Deploying a copy
 
@@ -86,6 +86,9 @@ COMPOSE_PROJECT_NAME=acme make down
   serves the frontend at `/` and proxies `/api` to the backend; the database and
   backend are reachable only inside the project network.
 - `GET /api/healthz` returns 200 through nginx once the stack is up.
+- Both images run as non-root numeric users: nginx as UID 101 on port 8080,
+  proxying `/api/` to `API_UPSTREAM` (default `http://backend:3000`), and the
+  backend as UID 1000 on `PORT` (3000).
 - Migrations run inside the stack: `migrate` uses the backend image and must
   finish before `backend` starts.
 - Run `make up` again after a code change: it rebuilds the images and replaces
@@ -106,5 +109,7 @@ COMPOSE_PROJECT_NAME=acme make down
 | `VITE_PORT`            | `5173`                                            | `make serve`: Vite dev server        |
 | `DB_PORT`              | `5432`                                            | `make serve`: host port for `dev-db` |
 | `TEST_DB_PORT`         | `5433`                                            | `make test`: host port for `test-db` |
+| `TEST_DATABASE_URL`    | `test-db` on `TEST_DB_PORT`                       | `make test`: exported, skips Docker  |
+| `API_UPSTREAM`         | `http://backend:3000`                             | `web` image: nginx `/api/` upstream  |
 
 Copy `.env.example` to `.env` to override; the Makefile loads it.

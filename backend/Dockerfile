@@ -13,7 +13,8 @@ WORKDIR /app
 COPY --from=deps /app ./
 COPY backend/src backend/src
 COPY backend/drizzle backend/drizzle
-USER node
+# Numeric (node) so Kubernetes can verify runAsNonRoot.
+USER 1000
 WORKDIR /app/backend
 EXPOSE 3000
 CMD ["node", "src/server.ts"]
