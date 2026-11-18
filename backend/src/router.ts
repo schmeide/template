@@ -1,5 +1,6 @@
 import { assetsRouter } from "./routers/assets.ts";
 import { bookingsRouter } from "./routers/bookings.ts";
+import { conversionsRouter } from "./routers/conversions.ts";
 import { customersRouter } from "./routers/customers.ts";
 import { dashboardRouter } from "./routers/dashboard.ts";
 import { dealsRouter } from "./routers/deals.ts";
@@ -26,6 +27,7 @@ export const appRouter = router({
   notes: notesRouter,
   orders: ordersRouter,
   people: peopleRouter,
+  conversions: conversionsRouter,
   requests: requestsRouter,
   stock: stockRouter,
 });

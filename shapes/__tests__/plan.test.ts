@@ -34,6 +34,15 @@ const shapes: Shapes = {
 const csv: Shape = { requires: [], files: ["backend/src/services/csv.ts"], routers: [], pages: [] };
 const withCsv: Shapes = { ...shapes, csv, stock: shape("stock", ["csv"]) };
 
+// A link shape: no page of its own, a view in a slot that a shape it requires exposes.
+const link: Shape = {
+  requires: ["invoices", "notes"],
+  files: ["frontend/src/linked/"],
+  routers: [{ key: "linked", name: "linkedRouter", from: "./routers/linked.ts" }],
+  pages: [],
+  slots: [{ slot: "invoice", name: "LinkedNotes", from: "./linked/LinkedNotes.tsx" }],
+};
+
 describe("resolve", () => {
   it("keeps the named shapes in the order given, then what they require", () => {
     expect(resolve(shapes, ["notes", "portal"])).toEqual([
@@ -68,6 +77,10 @@ describe("resolve", () => {
 describe("selectable", () => {
   it("lists the shapes that have a page, leaving out building blocks", () => {
     expect(selectable(withCsv)).toEqual(["customers", "invoices", "notes", "portal", "stock"]);
+  });
+
+  it("lists a link shape, whose required shapes have pages", () => {
+    expect(selectable({ ...withCsv, link })).toContain("link");
   });
 });
 
@@ -124,7 +137,7 @@ export type AppRouter = typeof appRouter;
 describe("renderPages", () => {
   it("lists the pages of kept shapes in menu order", () => {
     expect(renderPages(shapes, ["invoices", "customers"]))
-      .toBe(`import type { Page } from "./App.tsx";
+      .toBe(`import type { Page, Slot } from "./App.tsx";
 import { customersPage } from "./customers/Page.tsx";
 import { invoicesPage } from "./invoices/Page.tsx";
 
@@ -133,7 +146,20 @@ export const pages: readonly Page[] = [
   { path: "invoices", title: "INVOICES", Component: invoicesPage },
   { path: "customers", title: "CUSTOMERS", Component: customersPage },
 ];
+
+// One entry per view a shape adds to a page it does not own, rendered by <Slots> on that page.
+export const slots: readonly Slot[] = [];
 `);
+  });
+
+  it("lists the slot views of kept link shapes", () => {
+    expect(renderPages({ ...shapes, link }, ["link", "invoices", "customers", "notes"])).toContain(
+      `import { LinkedNotes } from "./linked/LinkedNotes.tsx";`
+    );
+    expect(renderPages({ ...shapes, link }, ["link", "invoices", "customers", "notes"]))
+      .toContain(`export const slots: readonly Slot[] = [
+  { slot: "invoice", Component: LinkedNotes },
+];`);
   });
 });
 

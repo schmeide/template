@@ -1,6 +1,6 @@
 import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { App, type Page } from "../App.tsx";
+import { App, Slots, type Page } from "../App.tsx";
 
 const page = (path: string, title: string): Page => ({
   path,
@@ -30,6 +30,28 @@ describe("App", () => {
 
     expect(await screen.findByRole("heading", { name: "Customers page" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Customers" })).toHaveAttribute("aria-current", "page");
+  });
+
+  it("renders the views added to a slot with the id the page passes", () => {
+    const host: Page = {
+      path: "invoices",
+      title: "Invoices",
+      Component: () => <Slots name="invoice" id={7} />,
+    };
+    const view = ({ id }: { readonly id: number }) => <p>Linked to {id}</p>;
+
+    render(
+      <App
+        pages={[host]}
+        slots={[
+          { slot: "invoice", Component: view },
+          { slot: "quote", Component: () => <p>Elsewhere</p> },
+        ]}
+      />
+    );
+
+    expect(screen.getByText("Linked to 7")).toBeInTheDocument();
+    expect(screen.queryByText("Elsewhere")).not.toBeInTheDocument();
   });
 
   it("opens the page named in the address", () => {

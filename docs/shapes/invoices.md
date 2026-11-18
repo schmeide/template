@@ -26,6 +26,8 @@ statuses.
   shows as overdue, and a sent quote past its valid-until date (the same `due_date` column) shows as expired.
 - **Share link**: `#/invoices/share/<token>` or `#/quotes/share/<token>`, where the token is a random UUID. It shows
   a sent document without internal ids and without staff actions. Drafts are never shared.
+- **Slots**: the quote and invoice views render `<Slots name="quote" id={id} />` and
+  `<Slots name="invoice" id={id} />`, where link shapes add their views. With no link shape kept they render nothing.
 - **The issuing business**: its name, address and email are constants in `frontend/src/invoices/business.ts`. Edit
   them for the project.
 
@@ -37,7 +39,8 @@ statuses.
 - Which fields show: due date, valid-until date, delivery address.
 - Whether payments apply.
 - Which document types the project keeps.
-- Whether one document converts into another (a quote becomes an invoice). That link is its own shape.
+- Whether one document converts into another. Converting a quote into an invoice is the
+  [quote-invoice](quote-invoice.md) link shape, which requires this one.
 
 ## Renaming a document type
 

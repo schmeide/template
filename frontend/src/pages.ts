@@ -1,7 +1,9 @@
-import type { Page } from "./App.tsx";
+import type { Page, Slot } from "./App.tsx";
 import { Assets } from "./assets/Assets.tsx";
 import { Bookings } from "./bookings/Bookings.tsx";
 import { BookOnline } from "./bookings/BookOnline.tsx";
+import { QuoteConversion } from "./conversions/Conversion.tsx";
+import { InvoiceSource } from "./conversions/Conversion.tsx";
 import { Customers } from "./customers/Customers.tsx";
 import { Dashboard } from "./dashboard/Dashboard.tsx";
 import { Deals } from "./deals/Deals.tsx";
@@ -30,4 +32,10 @@ export const pages: readonly Page[] = [
   { path: "shop", title: "Shop", Component: Shop },
   { path: "requests", title: "Requests", Component: Requests },
   { path: "stock", title: "Stock", Component: Stock },
+];
+
+// One entry per view a shape adds to a page it does not own, rendered by <Slots> on that page.
+export const slots: readonly Slot[] = [
+  { slot: "quote", Component: QuoteConversion },
+  { slot: "invoice", Component: InvoiceSource },
 ];

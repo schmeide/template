@@ -12,8 +12,8 @@ about working on the template itself.
 - **Every shape is real code in the normal layout.** A shape's tables, services, routers, and pages sit in
   `backend/src/` and `frontend/src/` like any feature. The template is one app with every shape in it, so `make serve`,
   `make test`, and `make check` cover all of them together.
-- **A manifest names what a shape owns.** `shapes/<name>.shape.json` lists its files, its sub-routers, its pages, and
-  the shapes it requires.
+- **A manifest names what a shape owns.** `shapes/<name>.shape.json` lists its files, its sub-routers, its pages, its
+  slot views, and the shapes it requires.
 - **A project is made by pruning.** `make shape/keep NAMES="invoices portal"` keeps those shapes and what they require,
   deletes every other shape's files, rewrites the two registries (`backend/src/router.ts` and `frontend/src/pages.ts`),
   replaces the migrations with one `0000_init` for the tables that are left, and deletes `shapes/`. What remains is an
@@ -59,7 +59,33 @@ own that both list under `requires`. It is defined once and kept whenever either
 directly; it is still just a shape.
 
 A link between two shapes (a quote converts to an invoice) is also a shape: it requires both and owns the files for the
-link.
+link. See below for how its view reaches their pages.
+
+### How a link's view reaches pages it does not own: slots
+
+A link usually belongs on the joined shapes' own screens: "Make invoice" on a quote, "Book a visit" on a job. A page of
+its own would move it away from the record it is about, and the joined page cannot link to that page without naming a
+shape that may be pruned. So a page exposes a **slot**, and a link shape fills it.
+
+- **The page names the place.** A shape renders `<Slots name="quote" id={id} />` (from `frontend/src/App.tsx`) where
+  other shapes may add to its view. The name is the record whose id it passes: `quote`, `invoice`, `deal`. The
+  shape's doc lists its slots. With nothing in a slot it renders nothing, so the page needs no change when a link is
+  pruned.
+- **The link shape fills it.** Its manifest lists `slots`, one entry per view:
+  `{ "slot": "quote", "name": "QuoteConversion", "from": "./conversions/Conversion.tsx" }`. The view takes only
+  `{ id }` and fetches the rest itself through its own router, or through the joined shape's router, which it may
+  call because it requires that shape. Reading the page's own query (for example `trpc.quotes.get`) shares its cache,
+  so the view follows the page's changes without the page knowing about it.
+- **The registry carries them.** `make shape/registries` writes the views into `slots` in `frontend/src/pages.ts`,
+  beside `pages`, and `main.tsx` hands them to `App`, which provides them to every `<Slots>`. Pruning regenerates
+  `slots` like `pages`, so a project with no link shape has `slots = []`.
+- **A link shape has no page of its own** unless it needs one, so `routers` and `slots` are usually its only registry
+  lines. A link with no page is still kept alone and checked: `make shape/list` includes every shape whose required
+  shapes have a page.
+
+Adding a slot to a shape is a change to that shape, made when the first link needs it: one `<Slots>` line on the page
+and a line in its doc. Do not add slots ahead of need. `quote-invoice`, the first link, added the `quote` and
+`invoice` slots to the invoices shape.
 
 The template keeps a normal migration history for development. Projects never see it, so migrations from different
 shapes cannot collide.
@@ -72,7 +98,8 @@ owns it; when a second shape needs it, move it into its own shape in that change
 single implementation" rule.
 
 A building block usually has no page and often no tables. `make shape/list` leaves such shapes out, so `shape/check`
-does not run one alone; it is checked with every shape that requires it. `csv` (owned by `stock` until `assets` also
+does not run one alone; it is checked with every shape that requires it. (A link shape also has no page, but what it
+requires does, so it is listed and checked alone.) `csv` (owned by `stock` until `assets` also
 needed it) is the first; `money` (from `invoices`) and `ratelimit` (from `requests`) moved out when `orders` needed
 them, and `people` (the "acting as" names, from `requests`) when `handbook` did. A building block may have tables
 and a router, as `people` does; it still has no page.
@@ -116,8 +143,8 @@ project made by `NAMES` keeps no recipe doc at all. So `shape/keep` deletes `doc
 but the one it was given. Recipe files themselves live in `shapes/` and go with it.
 
 The links a recipe describes are shapes of their own (see above). A recipe ships before its links are built; its doc
-names each link's issue, and staff carry the details across by hand until then. The first link shape to be built also
-decides how a link's view reaches pages it does not own.
+names each link's issue, and staff carry the details across by hand until then. Once a link is built, the recipes that
+use it name it in their shapes, after the shapes it joins.
 
 ### Keeping shapes green
 
@@ -147,7 +174,9 @@ approval ships with a plain "acting as" choice marked `ponytail:`.
    ```
 
    `files` takes files or directories (end a directory with `/`) and must cover everything the shape owns, tests and
-   its doc included. `from` is relative to the registry: `backend/src/` for routers, `frontend/src/` for pages.
+   its doc included. `from` is relative to the registry: `backend/src/` for routers, `frontend/src/` for pages and
+   slots. A link shape adds `"slots": [{ "slot": "quote", "name": "QuoteConversion", "from": "./..." }]` (see
+   [How a link's view reaches pages it does not own](#how-a-links-view-reaches-pages-it-does-not-own-slots)).
 
 3. Run `make shape/registries`, then `make db/generate NAME=create_<name>`.
 4. Write `docs/shapes/<name>.md`.
