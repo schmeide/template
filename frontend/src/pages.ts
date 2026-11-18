@@ -3,7 +3,9 @@ import { Assets } from "./assets/Assets.tsx";
 import { Bookings } from "./bookings/Bookings.tsx";
 import { BookOnline } from "./bookings/BookOnline.tsx";
 import { Customers } from "./customers/Customers.tsx";
+import { Dashboard } from "./dashboard/Dashboard.tsx";
 import { Deals } from "./deals/Deals.tsx";
+import { Handbook } from "./handbook/Handbook.tsx";
 import { Invoices } from "./invoices/Invoices.tsx";
 import { Notes } from "./notes/Notes.tsx";
 import { Orders } from "./orders/Orders.tsx";
@@ -17,7 +19,9 @@ export const pages: readonly Page[] = [
   { path: "bookings", title: "Bookings", Component: Bookings },
   { path: "book", title: "Book online", Component: BookOnline },
   { path: "customers", title: "Customers", Component: Customers },
+  { path: "dashboard", title: "Dashboard", Component: Dashboard },
   { path: "deals", title: "Deals", Component: Deals },
+  { path: "handbook", title: "Handbook", Component: Handbook },
   { path: "invoices", title: "Invoices", Component: Invoices },
   { path: "notes", title: "Notes", Component: Notes },
   { path: "orders", title: "Orders", Component: Orders },

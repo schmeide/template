@@ -1,7 +1,7 @@
 # Money
 
 Exact amounts and line totals, for shapes that price things. It has no tables and no page: nobody keeps it on its
-own, and `make shape/keep` refuses to. It comes with the shapes that require it (`invoices` and `orders`).
+own, and `make shape/keep` refuses to. It comes with the shapes that require it (`invoices`, `orders` and `dashboard`).
 
 ## What it has
 

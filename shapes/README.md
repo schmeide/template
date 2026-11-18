@@ -18,8 +18,11 @@ about working on the template itself.
   deletes every other shape's files, rewrites the two registries (`backend/src/router.ts` and `frontend/src/pages.ts`),
   replaces the migrations with one `0000_init` for the tables that are left, and deletes `shapes/`. What remains is an
   ordinary project with no trace of the mechanism.
+- **A recipe names the shapes for a trade.** `shapes/<name>.recipe.json` lists the shapes a trade-specific app keeps,
+  and `docs/recipes/<name>.md` says what each becomes and how they link. `make shape/keep RECIPE=field-service` keeps
+  them; `make shape/recipes` lists the recipes.
 - **CI proves each shape stands alone.** `make shape/check` copies the repo, keeps one shape, and runs `make check`,
-  `make test`, and `make build` in the copy, for every shape in turn.
+  `make test`, and `make build` in the copy, for every shape in turn, then the same for every recipe.
 
 ## Decisions
 
@@ -71,7 +74,8 @@ single implementation" rule.
 A building block usually has no page and often no tables. `make shape/list` leaves such shapes out, so `shape/check`
 does not run one alone; it is checked with every shape that requires it. `csv` (owned by `stock` until `assets` also
 needed it) is the first; `money` (from `invoices`) and `ratelimit` (from `requests`) moved out when `orders` needed
-them.
+them, and `people` (the "acting as" names, from `requests`) when `handbook` did. A building block may have tables
+and a router, as `people` does; it still has no page.
 
 ### How a shape becomes a named app
 
@@ -84,12 +88,43 @@ It says what the shape is, what usually varies (names, fields, statuses), and th
 into each sibling app. Where one project commonly needs two siblings at once, the shape models that as data (a document
 type column), and its doc says so.
 
+### Recipes for trade-specific apps
+
+People ask for an app for their trade (field service, an agency, a salon), not for a shape. A recipe answers that in
+two parts and nothing more:
+
+- `shapes/<name>.recipe.json`: a title and the shapes to keep, in menu order, the first being the home page:
+
+  ```json
+  { "title": "Field service", "shapes": ["deals", "bookings", "invoices", "requests"] }
+  ```
+
+  It is read with the manifests and checked with them: every name is a shape, none repeats, and the list makes a
+  project `shape/keep` accepts. It may name a shape with no page (a link shape, say) beside one with a page.
+
+- `docs/recipes/<name>.md`: what each shape becomes, linking the steps in its shape doc rather than repeating them;
+  the links between the shapes; the names to change and the fields to add; and what the trade needs that no shape
+  covers yet.
+
+A recipe only chooses shapes. Renames, fields and settings stay edits described in its doc, for the same reason a
+shape has no settings layer (see above). A recipe that needs a shape twice (two boards, two calendars) does not get
+it: its doc says how one shape covers both, or lists the second under "not covered yet".
+
+**A project made from a recipe keeps that recipe's doc**, and every other recipe doc is deleted. The doc lists the
+edits still to make and the links not yet built, which is what the next person or agent in that project needs, and a
+project made by `NAMES` keeps no recipe doc at all. So `shape/keep` deletes `docs/recipes/<name>.md` for every recipe
+but the one it was given. Recipe files themselves live in `shapes/` and go with it.
+
+The links a recipe describes are shapes of their own (see above). A recipe ships before its links are built; its doc
+names each link's issue, and staff carry the details across by hand until then. The first link shape to be built also
+decides how a link's view reaches pages it does not own.
+
 ### Keeping shapes green
 
 - The template's own CI runs every shape together.
 - `make shape/check` runs each shape alone, which catches a shape that uses another without requiring it.
-- `make shape/check NAMES="a b"` checks one combination. When recipes for trade-specific apps exist, CI runs it for
-  each recipe.
+- `make shape/check` also runs each recipe, kept with `RECIPE=`, so CI proves every recipe's project checks, tests and
+  builds. `make shape/check NAMES="a b"` or `RECIPE=name` checks one case.
 
 ### Sign-in
 
@@ -118,7 +153,15 @@ approval ships with a plain "acting as" choice marked `ponytail:`.
 4. Write `docs/shapes/<name>.md`.
 5. Run `make check`, `make test`, `make build`, and `make shape/check`.
 
+## Adding a recipe
+
+1. Add `shapes/<name>.recipe.json` with a title and the shapes, home page first. `make shape/recipes` lists it.
+2. Write `docs/recipes/<name>.md` as the others are written. File an issue for each link it needs that has none.
+3. Run `make shape/check RECIPE=<name>`.
+
 ## Limits
 
-- `shape/check` runs its cases one after another, each with its own `npm ci`. Move it to a CI matrix when that is slow.
+- `shape/check` runs its cases one after another, each with its own `npm ci`: eleven shapes and three
+  recipes took about eight minutes on a laptop with a warm npm cache. That is well inside the CI job's six-hour limit
+  but the slowest step; move it to a CI matrix over `shape/list` and `shape/recipes` when it gets in the way.
 - A manifest is trusted to list every file its shape owns. A file left out stays in every project.

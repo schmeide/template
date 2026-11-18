@@ -83,6 +83,46 @@ export const filesToDelete = (shapes: Shapes, kept: readonly string[]): readonly
     .filter(([name]) => !kept.includes(name))
     .flatMap(([, shape]) => shape.files);
 
+// A recipe names the shapes a trade-specific app keeps, home page first. Everything else about
+// the app (names, fields, links) is edits, described in its doc at `docs/recipes/<name>.md`.
+export type Recipe = { readonly title: string; readonly shapes: readonly string[] };
+
+export type Recipes = Readonly<Record<string, Recipe>>;
+
+export const recipeDoc = (name: string): string => `docs/recipes/${name}.md`;
+
+// Mistakes in the recipes. A recipe must make a project that `resolve` accepts; it may name a
+// shape with no page (a link shape, say) as long as it also names one with a page.
+export const recipeProblems = (shapes: Shapes, recipes: Recipes): readonly string[] =>
+  Object.entries(recipes).flatMap(([name, recipe]) => {
+    const unknown = recipe.shapes.filter((shape) => !(shape in shapes));
+    const found = [
+      ...(recipe.shapes.length === 0 ? [`recipe ${name} names no shapes`] : []),
+      ...unknown.map((shape) => `recipe ${name} names ${shape}, which is not a shape`),
+      ...duplicates(recipe.shapes).map((shape) => `recipe ${name} names ${shape} more than once`),
+    ];
+    if (found.length > 0) return found;
+    try {
+      resolve(shapes, recipe.shapes);
+      return [];
+    } catch (error) {
+      return [`recipe ${name}: ${error instanceof Error ? error.message : String(error)}`];
+    }
+  });
+
+export const recipeShapes = (recipes: Recipes, name: string): readonly string[] => {
+  if (!(name in recipes)) {
+    throw new Error(`${name} is not a recipe. Recipes: ${Object.keys(recipes).join(", ")}`);
+  }
+  return recipes[name].shapes;
+};
+
+// A project made from a recipe keeps that recipe's doc, since it lists the edits still to make.
+export const recipeDocsToDelete = (recipes: Recipes, kept?: string): readonly string[] =>
+  Object.keys(recipes)
+    .filter((name) => name !== kept)
+    .map(recipeDoc);
+
 type Import = { readonly name: string; readonly from: string; readonly typeOnly?: boolean };
 
 const importLines = (imports: readonly Import[]): string =>

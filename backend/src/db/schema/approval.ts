@@ -13,6 +13,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
+import { people } from "./people.ts";
 
 export const requestStatus = pgEnum("approval_request_status", [
   "draft",
@@ -63,21 +64,12 @@ export type Answer = string | number | CheckAnswer;
 // Keyed by field label. The fields they answer are copied onto the request.
 export type Answers = Readonly<Record<string, Answer>>;
 
-// Who submits and who reviews.
-// ponytail: a plain list of names picked in the browser ("acting as"), so anyone can act as anyone
-// and the self-approval rule is only as strong as that choice. Replace it with the signed-in user
-// once the platform supplies sign-in (schmeide/schmeide.app#84).
-export const approvalPeople = pgTable("approval_people", {
-  id: serial("id").primaryKey(),
-  name: varchar("name", { length: 100 }).notNull().unique(),
-});
-
 export const approvalTypes = pgTable("approval_types", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 200 }).notNull(),
   fields: jsonb("fields").$type<readonly Field[]>().notNull(),
   // Who decides. No approver means anyone but the submitter.
-  approverId: integer("approver_id").references(() => approvalPeople.id, { onDelete: "set null" }),
+  approverId: integer("approver_id").references(() => people.id, { onDelete: "set null" }),
   // The public intake link. Null while public intake is off; a random UUID is unguessable.
   publicToken: uuid("public_token").unique(),
 });
@@ -90,7 +82,7 @@ export const approvalRequests = pgTable(
       .notNull()
       .references(() => approvalTypes.id),
     // Null for a request that came through the public link; `contact` says who sent it.
-    submitterId: integer("submitter_id").references(() => approvalPeople.id),
+    submitterId: integer("submitter_id").references(() => people.id),
     contact: varchar("contact", { length: 200 }).notNull().default(""),
     // The type's fields as they stood when the request was last saved, so it stays readable after
     // the type changes.
@@ -117,7 +109,7 @@ export const approvalDecisions = pgTable(
       .notNull()
       .references(() => approvalRequests.id, { onDelete: "cascade" }),
     // Null for a submission through the public link.
-    actorId: integer("actor_id").references(() => approvalPeople.id),
+    actorId: integer("actor_id").references(() => people.id),
     outcome: requestStatus("outcome").notNull(),
     comment: varchar("comment", { length: 2000 }).notNull().default(""),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -128,10 +120,6 @@ export const approvalDecisions = pgTable(
 const idShape = createSelectSchema(approvalRequests).pick({ id: true }).shape;
 const actorShape = { actorId: z.number().int() };
 const answersSchema = z.record(z.string(), z.unknown());
-
-export const newPersonSchema = createInsertSchema(approvalPeople, {
-  name: (schema) => schema.trim().min(1),
-}).pick({ name: true });
 
 export const newTypeSchema = createInsertSchema(approvalTypes, {
   name: (schema) => schema.trim().min(1),
@@ -168,12 +156,10 @@ export const publicRequestSchema = z.object({
   website: z.string().max(200).optional(),
 });
 
-export type Person = typeof approvalPeople.$inferSelect;
 export type RequestType = typeof approvalTypes.$inferSelect;
 export type Request = typeof approvalRequests.$inferSelect;
 export type Decision = typeof approvalDecisions.$inferSelect;
 export type Status = Request["status"];
-export type NewPerson = z.input<typeof newPersonSchema>;
 export type NewType = z.input<typeof newTypeSchema>;
 export type TypeUpdate = z.input<typeof typeUpdateSchema>;
 export type NewRequest = z.input<typeof newRequestSchema>;

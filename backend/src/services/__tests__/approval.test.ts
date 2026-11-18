@@ -4,7 +4,6 @@ import { afterAll, describe, expect, it } from "vitest";
 import { createDb } from "../../db/client.ts";
 import { fieldsSchema, type Field, type Status } from "../../db/schema/approval.ts";
 import {
-  addPerson,
   createRequest,
   createType,
   defaultTypes,
@@ -19,6 +18,7 @@ import {
   updateRequest,
   updateType,
 } from "../approval.ts";
+import { addPerson } from "../people.ts";
 
 // Tests share one database, so they create their own people and types and assert only on those.
 const db = createDb(process.env.DATABASE_URL ?? "");

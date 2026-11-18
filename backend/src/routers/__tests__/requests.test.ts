@@ -11,8 +11,8 @@ afterAll(() => db.$client.end());
 const fields = [{ label: "Reason", kind: "text", required: true }] as const;
 
 const setup = async () => {
-  const submitter = await caller.requests.addPerson({ name: randomUUID() });
-  const reviewer = await caller.requests.addPerson({ name: randomUUID() });
+  const submitter = await caller.people.add({ name: randomUUID() });
+  const reviewer = await caller.people.add({ name: randomUUID() });
   const type = await caller.requests.createType({ name: randomUUID(), fields: [...fields] });
   return { submitter, reviewer, type };
 };
@@ -43,7 +43,7 @@ describe("requests router", () => {
       ["approved", reviewer.name, "Enjoy"],
       ["submitted", submitter.name, ""],
     ]);
-    expect((await caller.requests.people()).map((person) => person.id)).toContain(reviewer.id);
+    expect((await caller.people.list()).map((person) => person.id)).toContain(reviewer.id);
     expect((await caller.requests.types()).map((candidate) => candidate.id)).toContain(type.id);
   });
 
