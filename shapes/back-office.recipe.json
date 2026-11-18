@@ -1,4 +1,4 @@
 {
   "title": "Internal back office",
-  "shapes": ["requests", "directory", "stock", "assets", "handbook"]
+  "shapes": ["requests", "directory", "stock", "assets", "handbook", "leave-balance"]
 }

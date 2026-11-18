@@ -1,0 +1,18 @@
+{
+  "requires": ["requests", "stock"],
+  "files": [
+    "backend/src/db/schema/leave.ts",
+    "backend/src/services/leave.ts",
+    "backend/src/services/__tests__/leave.test.ts",
+    "backend/src/routers/leave.ts",
+    "backend/src/routers/__tests__/leave.test.ts",
+    "frontend/src/leave/",
+    "docs/shapes/leave-balance.md"
+  ],
+  "routers": [{ "key": "leave", "name": "leaveRouter", "from": "./routers/leave.ts" }],
+  "pages": [],
+  "slots": [
+    { "slot": "request", "name": "RequestLeave", "from": "./leave/Leave.tsx" },
+    { "slot": "account", "name": "AccountLeave", "from": "./leave/Leave.tsx" }
+  ]
+}
