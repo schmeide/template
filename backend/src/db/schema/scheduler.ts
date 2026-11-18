@@ -10,6 +10,7 @@ import {
   time,
   timestamp,
   uniqueIndex,
+  uuid,
   varchar,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
@@ -115,9 +116,12 @@ export const schedulerBookings = pgTable(
     seat: integer("seat").notNull(),
     capacity: integer("capacity").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    // Shared by the bookings of one repeating series; null for a booking made on its own.
+    seriesId: uuid("series_id"),
   },
   (table) => [
     index().on(table.resourceId, table.startsAt),
+    index().on(table.seriesId),
     uniqueIndex("scheduler_bookings_one_per_seat")
       .on(table.resourceId, table.startsAt, table.seat)
       .where(sql`${table.status} <> 'cancelled'`),
@@ -199,6 +203,24 @@ export const newBookingSchema = createInsertSchema(schedulerBookings)
   .pick({ customerId: true })
   .extend(slotShape);
 
+// The same slot every `everyWeeks` weeks, at the same wall-clock time, for `count` bookings or
+// until the date `until` (in the resource's zone), at most 52 bookings or a year.
+export const newSeriesSchema = newBookingSchema
+  .extend({
+    everyWeeks: z.number().int().min(1).max(4),
+    count: z.number().int().min(2).max(52).optional(),
+    until: day.optional(),
+  })
+  .refine(
+    ({ count, until }) => (count === undefined) !== (until === undefined),
+    "Give a number of bookings or a last date, not both"
+  )
+  .refine(
+    ({ startsAt, until }) =>
+      until === undefined || Date.parse(until) - startsAt.getTime() <= 365 * 86_400_000,
+    "A series can run for at most a year"
+  );
+
 const contactFields = createInsertSchema(customers, {
   name: (schema) => schema.trim().min(1),
   email: (schema) => schema.trim().pipe(z.email()),
@@ -229,5 +251,6 @@ export type NewRule = z.input<typeof newRuleSchema>;
 export type NewException = z.input<typeof newExceptionSchema>;
 export type SlotSearch = z.input<typeof slotSearchSchema>;
 export type NewBooking = z.input<typeof newBookingSchema>;
+export type NewSeries = z.input<typeof newSeriesSchema>;
 export type PublicBooking = z.input<typeof publicBookingSchema>;
 export type MoveBooking = z.input<typeof moveBookingSchema>;

@@ -80,7 +80,82 @@ describe("bookings router", () => {
     } satisfies Partial<TRPCError>);
   });
 
+  it("books, moves and cancels a series, and names the dates that are not free", async () => {
+    const resource = await caller.bookings.createResource({ name: randomUUID(), timeZone: "UTC" });
+    const service = await caller.bookings.createService({ name: "Fix", durationMinutes: 60 });
+    await caller.bookings.addRule({
+      resourceId: resource.id,
+      weekday: 1,
+      startTime: "09:00",
+      endTime: "11:00",
+    });
+    const customer = await caller.customers.create({ name: randomUUID() });
+    const input = {
+      serviceId: service.id,
+      resourceId: resource.id,
+      startsAt: new Date("2030-01-14T09:00:00Z"),
+      customerId: customer.id,
+      everyWeeks: 1,
+      count: 2,
+    };
+
+    const booked = await caller.bookings.createSeries(input);
+    await expect(caller.bookings.createSeries(input)).rejects.toMatchObject({
+      code: "CONFLICT",
+      message: "Not free on 2030-01-14, 2030-01-21. Nothing was booked.",
+    } satisfies Partial<TRPCError>);
+    const moved = await caller.bookings.moveSeries({
+      id: booked[0].id,
+      resourceId: resource.id,
+      startsAt: new Date("2030-01-14T10:00:00Z"),
+    });
+    const cancelled = await caller.bookings.cancelSeries({ id: booked[0].id });
+
+    expect(moved.map((booking) => booking.startsAt.getUTCHours())).toEqual([10, 10]);
+    expect(cancelled.map((booking) => booking.status)).toEqual(["cancelled", "cancelled"]);
+    await expect(caller.bookings.cancelSeries({ id: booked[0].id })).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    } satisfies Partial<TRPCError>);
+  });
+
   it.each([
+    [
+      "a series with both a count and an end date",
+      () =>
+        caller.bookings.createSeries({
+          serviceId: 1,
+          resourceId: 1,
+          customerId: 1,
+          startsAt: new Date("2030-01-14T09:00:00Z"),
+          everyWeeks: 1,
+          count: 2,
+          until: "2030-02-01",
+        }),
+    ],
+    [
+      "a series of more than 52 bookings",
+      () =>
+        caller.bookings.createSeries({
+          serviceId: 1,
+          resourceId: 1,
+          customerId: 1,
+          startsAt: new Date("2030-01-14T09:00:00Z"),
+          everyWeeks: 1,
+          count: 53,
+        }),
+    ],
+    [
+      "a series that ends more than a year on",
+      () =>
+        caller.bookings.createSeries({
+          serviceId: 1,
+          resourceId: 1,
+          customerId: 1,
+          startsAt: new Date("2030-01-14T09:00:00Z"),
+          everyWeeks: 1,
+          until: "2031-02-01",
+        }),
+    ],
     [
       "an unknown time zone",
       () => caller.bookings.createResource({ name: "x", timeZone: "Mars/Base" }),

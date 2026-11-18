@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { Slots } from "../App.tsx";
 import { useTRPC } from "../trpc.ts";
-import { focusOnMount, formatDay, formatTime, localDate, statuses } from "./format.ts";
+import { focusOnMount, formatDay, formatTime, localDate, statuses, statusLabel } from "./format.ts";
 import { readSlot, SlotPicker } from "./SlotPicker.tsx";
+
+const bookingCount = (count: number) => (count === 1 ? "1 booking" : `${count} bookings`);
 
 export function BookingDetail({ id }: { readonly id: number }) {
   const trpc = useTRPC();
@@ -12,6 +14,14 @@ export function BookingDetail({ id }: { readonly id: number }) {
   const refresh = () => queryClient.invalidateQueries({ queryKey: trpc.bookings.pathKey() });
   const setStatus = useMutation(trpc.bookings.setStatus.mutationOptions({ onSettled: refresh }));
   const move = useMutation(trpc.bookings.move.mutationOptions({ onSettled: refresh }));
+  const moveSeries = useMutation(trpc.bookings.moveSeries.mutationOptions({ onSettled: refresh }));
+  const [confirmingCancel, setConfirmingCancel] = useState(false);
+  const cancelSeries = useMutation(
+    trpc.bookings.cancelSeries.mutationOptions({
+      onSettled: refresh,
+      onSuccess: () => setConfirmingCancel(false),
+    })
+  );
 
   const onStatus = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -22,12 +32,24 @@ export function BookingDetail({ id }: { readonly id: number }) {
 
   const onMove = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const slot = readSlot(new FormData(event.currentTarget));
-    if (slot) move.mutate({ id, ...slot });
+    const data = new FormData(event.currentTarget);
+    const slot = readSlot(data);
+    if (!slot) return;
+    if (data.has("later")) moveSeries.mutate({ id, ...slot });
+    else move.mutate({ id, ...slot });
   };
 
   const data = booking.data;
   const open = data?.status === "booked" || data?.status === "confirmed";
+  const moving = move.isPending || moveSeries.isPending;
+  const moveError = move.error ?? moveSeries.error;
+  // The open bookings from this one on, which "Cancel this and later bookings" cancels.
+  const later = (data?.series ?? []).filter(
+    (occurrence) =>
+      data !== undefined &&
+      occurrence.startsAt >= data.startsAt &&
+      (occurrence.status === "booked" || occurrence.status === "confirmed")
+  ).length;
 
   return (
     <main>
@@ -63,6 +85,53 @@ export function BookingDetail({ id }: { readonly id: number }) {
               </dd>
             </div>
           </dl>
+          {data.series.length > 0 && (
+            <section aria-labelledby="booking-series" className="booking-form">
+              <h2 id="booking-series">Repeats</h2>
+              <ol aria-label="Bookings in this series" className="booking-list">
+                {data.series.map((occurrence) => (
+                  <li key={occurrence.id}>
+                    <a
+                      href={`#/bookings/${occurrence.id}`}
+                      aria-current={occurrence.id === id ? "page" : undefined}
+                    >
+                      {formatDay(localDate(occurrence.startsAt, occurrence.timeZone))},{" "}
+                      {formatTime(occurrence.startsAt, occurrence.timeZone)}
+                    </a>
+                    , {statusLabel(occurrence.status)}
+                  </li>
+                ))}
+              </ol>
+              {open && !confirmingCancel && (
+                <button type="button" onClick={() => setConfirmingCancel(true)}>
+                  Cancel this and later bookings
+                </button>
+              )}
+              {open && confirmingCancel && (
+                <>
+                  <p ref={focusOnMount} tabIndex={-1}>
+                    Cancel {bookingCount(later)}? Their times become free for others, and this
+                    cannot be undone.
+                  </p>
+                  <div className="booking-actions">
+                    <button
+                      type="button"
+                      disabled={cancelSeries.isPending}
+                      onClick={() => cancelSeries.mutate({ id })}
+                    >
+                      Cancel {bookingCount(later)}
+                    </button>
+                    <button type="button" onClick={() => setConfirmingCancel(false)}>
+                      Keep bookings
+                    </button>
+                  </div>
+                </>
+              )}
+              {cancelSeries.error && (
+                <p role="alert">Unable to cancel: {cancelSeries.error.message}</p>
+              )}
+            </section>
+          )}
           {data.status === "cancelled" ? (
             <p>This booking is cancelled and its time is free for others.</p>
           ) : (
@@ -102,16 +171,29 @@ export function BookingDetail({ id }: { readonly id: number }) {
                 defaultDate={localDate(data.startsAt, data.resource.timeZone)}
                 isClass={data.service.capacity > 1}
               />
+              {data.series.length > 0 && (
+                <label>
+                  <input type="checkbox" name="later" /> Move the later bookings too
+                </label>
+              )}
               <p>
-                <button type="submit" disabled={move.isPending}>
+                <button type="submit" disabled={moving}>
                   Move booking
                 </button>
               </p>
-              {move.error && <p role="alert">Unable to move: {move.error.message}</p>}
+              {moveError && <p role="alert">Unable to move: {moveError.message}</p>}
             </form>
           )}
           <p role="status">
-            {setStatus.isSuccess ? "Status saved" : move.isSuccess ? "Booking moved" : ""}
+            {setStatus.isSuccess
+              ? "Status saved"
+              : move.isSuccess
+                ? "Booking moved"
+                : moveSeries.isSuccess
+                  ? "Bookings moved"
+                  : cancelSeries.isSuccess
+                    ? "Bookings cancelled"
+                    : ""}
           </p>
         </>
       )}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addDays, instantOf, localDate, weekdayOf } from "../zonedTime.ts";
+import { addDays, instantOf, localDate, localTime, weekdayOf } from "../zonedTime.ts";
 
 // New York springs forward on 2030-03-10 (02:00 becomes 03:00) and falls back on 2030-11-03
 // (02:00 becomes 01:00).
@@ -21,6 +21,11 @@ describe("zoned time", () => {
     expect(instantOf("2030-03-10", "01:30", ny).toISOString()).toBe("2030-03-10T06:30:00.000Z");
     expect(instantOf("2030-03-10", "02:30", ny).toISOString()).toBe("2030-03-10T07:30:00.000Z");
     expect(instantOf("2030-03-10", "03:30", ny).toISOString()).toBe("2030-03-10T07:30:00.000Z");
+  });
+
+  it("reads the wall-clock time of an instant", () => {
+    expect(localTime(new Date("2030-01-15T14:00:00Z"), ny)).toBe("09:00:00");
+    expect(localTime(new Date("2030-07-15T13:00:00Z"), ny)).toBe("09:00:00");
   });
 
   it("takes the earlier instant in the repeated hour", () => {

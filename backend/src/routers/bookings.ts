@@ -6,6 +6,7 @@ import {
   newExceptionSchema,
   newResourceSchema,
   newRuleSchema,
+  newSeriesSchema,
   newServiceSchema,
   publicBookingSchema,
   rangeSchema,
@@ -19,8 +20,10 @@ import {
   addException,
   addRule,
   bookPublicly,
+  cancelSeries,
   createBooking,
   createResource,
+  createSeries,
   createService,
   deleteException,
   deleteRule,
@@ -31,9 +34,11 @@ import {
   listResources,
   listServices,
   moveBooking,
+  moveSeries,
   setStatus,
   updateResource,
   updateService,
+  type SeriesResult,
 } from "../services/scheduler.ts";
 import { procedure, router } from "../trpc.ts";
 
@@ -53,6 +58,18 @@ const free = <T>(value: T | undefined): T => {
     });
   }
   return value;
+};
+
+// A series is all or nothing: name the dates that stopped it.
+const allFree = (result: SeriesResult | undefined, nothing: string) => {
+  const { booked, unfree } = free(result);
+  if (unfree.length > 0) {
+    throw new TRPCError({
+      code: "CONFLICT",
+      message: `Not free on ${unfree.join(", ")}. ${nothing}`,
+    });
+  }
+  return booked;
 };
 
 const noResource = "No resource has that id";
@@ -119,6 +136,21 @@ export const bookingsRouter = router({
   move: procedure
     .input(moveBookingSchema)
     .mutation(async ({ ctx, input }) => free(await moveBooking(ctx.db, input))),
+  createSeries: procedure
+    .input(newSeriesSchema)
+    .mutation(async ({ ctx, input }) =>
+      allFree(await createSeries(ctx.db, input), "Nothing was booked.")
+    ),
+  moveSeries: procedure
+    .input(moveBookingSchema)
+    .mutation(async ({ ctx, input }) =>
+      allFree(await moveSeries(ctx.db, input), "Nothing was moved.")
+    ),
+  cancelSeries: procedure
+    .input(idSchema)
+    .mutation(async ({ ctx, input }) =>
+      found(await cancelSeries(ctx.db, input.id), "No booking that is still open has that id")
+    ),
   setStatus: procedure
     .input(statusSchema)
     .mutation(async ({ ctx, input }) =>

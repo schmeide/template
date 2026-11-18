@@ -23,6 +23,10 @@ equipment and room rental, and reservations are the same shape with different na
   be brought back.
 - **Slot**: the booking page renders `<Slots name="booking" id={id} />` below the title, where link shapes add their
   views. With no link shape kept it renders nothing.
+- **Repeating bookings** (`#/bookings/new`, then any booking in the series): the same time every week or every two
+  weeks, for a number of bookings or until a last date, up to 52 bookings or a year. Each booking is its own row in
+  `scheduler_bookings`, sharing a `series_id`. A booking's page lists the whole series and can move or cancel this
+  booking and the open ones after it.
 - **Public page** (`#/book`): a customer picks a service and a free time and gives a name, email and optional phone.
   It calls only `services`, `resources`, `slots` and `book`, which return nothing about other customers. Each public
   booking creates a customer.
@@ -38,6 +42,27 @@ shown on the resource's clock, never the browser's.
 
 A slot is free when no live booking overlaps it or its buffer, or when the only overlaps are the same service at the
 same start with places left.
+
+## Repeating bookings
+
+`createSeries` keeps the wall-clock time and moves the date on by whole weeks in the resource's zone, so a 09:00
+booking stays 09:00 across a daylight-saving change and its instants shift by an hour. The first booking is the time
+picked, so the second 01:30 on a fall-back day stays itself; later ones at a repeated time take the earlier of the two.
+
+A series is all or nothing. Each date is checked like a single booking (hours, exceptions, places and existing
+bookings) in one transaction under the resource lock, and if any date is not free nothing is booked and the answer
+names those dates, in the resource's zone. Staff then pick another time, shorten the series, or book the free dates
+as a shorter series and the rest one by one. Booking the free dates and listing the rest would leave a series with
+gaps that nobody chose.
+
+Moving "this and later" moves each open booking from this one on by the same number of days, to the new time on the
+new resource, all or none, under that resource's lock. The bookings being moved are left out of the check, so moving a
+series a week later can land on its own old dates. Cancelling "this and later" cancels the open ones from this one on;
+completed and no-show bookings stay as they are. A series is not stored as a rule: adding more dates later means
+booking a new series.
+
+The public page books one time only. Repeating bookings there would need the customer to see why a date failed, and
+returning customers to be recognized; add it after sign-in.
 
 ## No double booking
 
@@ -72,7 +97,6 @@ staff assign the work.
 
 ## Limits
 
-- Recurring bookings (the same time every week) are not built; book each one.
 - No reminders are sent before a booking; that needs email and a job runner.
 - Until sign-in exists every procedure is open, as in every shape. The staff ones belong behind sign-in then, and the
   public page should stop showing the staff menu.

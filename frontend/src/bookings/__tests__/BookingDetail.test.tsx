@@ -14,6 +14,8 @@ const detail = (status: "booked" | "cancelled" = "booked") => ({
   seat: 1,
   capacity: 1,
   createdAt: new Date("2030-01-01"),
+  seriesId: null as string | null,
+  series: [],
   resource: resources()[0],
   service: services()[0],
   customer: {
@@ -61,6 +63,55 @@ describe("BookingDetail", () => {
       from: "2030-03-11",
       to: "2030-03-11",
     });
+  });
+
+  it("lists the series, and moves or cancels this booking and the later ones", async () => {
+    const series = [
+      { id: 6, startsAt: "2030-03-04T14:00:00Z", status: "completed" as const },
+      { id: 7, startsAt: "2030-03-11T13:00:00Z", status: "booked" as const },
+      { id: 8, startsAt: "2030-03-18T13:00:00Z", status: "booked" as const },
+    ].map(({ id, startsAt, status }) => ({
+      id,
+      status,
+      startsAt: new Date(startsAt),
+      endsAt: new Date(Date.parse(startsAt) + 30 * 60_000),
+      timeZone: "America/New_York",
+    }));
+    const calls = renderWithBackend(<BookingDetail id={7} />, {
+      "bookings.get": () => ({ ...detail(), seriesId: "s", series }),
+      "bookings.resources": () => resources(),
+      "bookings.slots": () => [slot("2030-03-11T14:00:00Z")],
+      "bookings.moveSeries": () => [],
+      "bookings.cancelSeries": () => [],
+    });
+    const user = userEvent.setup();
+
+    const list = await screen.findByRole("list", { name: "Bookings in this series" });
+    expect(list).toHaveTextContent(/Monday, March 4, 2030, 9:00\sAM EST, Completed/);
+    expect(list).toHaveTextContent(/Monday, March 18, 2030, 9:00\sAM EDT, Booked/);
+    expect(screen.getByRole("link", { current: "page" })).toHaveTextContent(/March 11/);
+    await user.click(await screen.findByRole("radio", { name: /10:00\sAM EDT, Sam/ }));
+    await user.click(screen.getByRole("checkbox", { name: "Move the later bookings too" }));
+    await user.click(screen.getByRole("button", { name: "Move booking" }));
+    await user.click(screen.getByRole("button", { name: "Cancel this and later bookings" }));
+    expect(screen.getByText(/Cancel 2 bookings\? Their times become free/)).toHaveFocus();
+    await user.click(screen.getByRole("button", { name: "Keep bookings" }));
+    await user.click(screen.getByRole("button", { name: "Cancel this and later bookings" }));
+    await user.click(screen.getByRole("button", { name: "Cancel 2 bookings" }));
+
+    await waitFor(() =>
+      expect(
+        calls.filter((call) =>
+          ["bookings.move", "bookings.moveSeries", "bookings.cancelSeries"].includes(call.path)
+        )
+      ).toEqual([
+        {
+          path: "bookings.moveSeries",
+          input: { id: 7, resourceId: 1, startsAt: new Date("2030-03-11T14:00:00Z") },
+        },
+        { path: "bookings.cancelSeries", input: { id: 7 } },
+      ])
+    );
   });
 
   it("offers no changes to a cancelled booking", async () => {

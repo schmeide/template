@@ -8,8 +8,10 @@ import {
   addException,
   addRule,
   bookPublicly,
+  cancelSeries,
   createBooking,
   createResource,
+  createSeries,
   createService,
   deleteRule,
   findSlots,
@@ -17,6 +19,7 @@ import {
   getBooking,
   listBookings,
   moveBooking,
+  moveSeries,
   setStatus,
 } from "../scheduler.ts";
 
@@ -395,6 +398,137 @@ describe("scheduler service", () => {
       status: "booked",
     });
     expect(onTuesday.find((row) => row.id === booking?.id)).toBeUndefined();
+  });
+
+  it("books a weekly series at the same wall-clock time across a daylight-saving change", async () => {
+    const resource = await openMondays();
+    const service = await newService();
+    const customer = await newCustomer();
+
+    // 09:00 New York on the Mondays either side of the spring-forward on 2030-03-10.
+    const result = await createSeries(db, {
+      serviceId: service.id,
+      resourceId: resource.id,
+      customerId: customer.id,
+      startsAt: at("2030-03-04T14:00:00Z"),
+      everyWeeks: 1,
+      count: 3,
+    });
+
+    expect(result?.unfree).toEqual([]);
+    expect(result?.booked.map((booking) => booking.startsAt.toISOString())).toEqual([
+      "2030-03-04T14:00:00.000Z",
+      "2030-03-11T13:00:00.000Z",
+      "2030-03-18T13:00:00.000Z",
+    ]);
+    const seriesIds = new Set(result?.booked.map((booking) => booking.seriesId));
+    expect(seriesIds.size).toBe(1);
+    expect(seriesIds.has(null)).toBe(false);
+    const detail = await getBooking(db, result?.booked[1]?.id ?? -1);
+    expect(detail?.series.map((occurrence) => occurrence.id)).toEqual(
+      result?.booked.map((booking) => booking.id)
+    );
+  });
+
+  it("refuses a whole series when any date is closed, taken or full, and names those dates", async () => {
+    const resource = await openMondays();
+    const service = await newService();
+    const yoga = await newService({ capacity: 2 });
+    const customer = await newCustomer();
+    const startsAt = at("2030-01-14T15:00:00Z");
+    await addException(db, { resourceId: resource.id, date: "2030-01-21" });
+    await book(service.id, resource.id, at("2030-01-28T15:30:00Z"));
+    const series = { resourceId: resource.id, customerId: customer.id, startsAt, everyWeeks: 1 };
+
+    const refused = await createSeries(db, { ...series, serviceId: service.id, count: 4 });
+    // Every two weeks until 2030-02-11: the 14th, the taken 28th, and the 11th.
+    const fortnightly = await createSeries(db, {
+      ...series,
+      serviceId: service.id,
+      everyWeeks: 2,
+      until: "2030-02-11",
+    });
+
+    expect(refused).toEqual({ booked: [], unfree: ["2030-01-21", "2030-01-28"] });
+    expect(fortnightly).toEqual({ booked: [], unfree: ["2030-01-28"] });
+    expect(iso(await slotsOn(service.id, resource.id, monday))).toContain("15:00");
+
+    await book(yoga.id, resource.id, at("2030-02-04T15:00:00Z"));
+    await book(yoga.id, resource.id, at("2030-02-04T15:00:00Z"));
+    const full = await createSeries(db, {
+      ...series,
+      startsAt: at("2030-02-04T15:00:00Z"),
+      serviceId: yoga.id,
+      count: 2,
+    });
+    expect(full).toEqual({ booked: [], unfree: ["2030-02-04"] });
+    expect(await createSeries(db, { ...series, serviceId: -1, count: 2 })).toBeUndefined();
+    expect(
+      await createSeries(db, { ...series, resourceId: -1, serviceId: service.id, count: 2 })
+    ).toBeUndefined();
+  });
+
+  it("lets only one of many simultaneous series have their slots", async () => {
+    const resource = await openMondays();
+    const service = await newService();
+
+    const results = await Promise.all(
+      Array.from({ length: 4 }, async (_, index) =>
+        createSeries(db, {
+          serviceId: service.id,
+          resourceId: resource.id,
+          customerId: (await newCustomer()).id,
+          // Each series overlaps the others on its second and third dates.
+          startsAt: new Date(Date.parse("2030-01-14T15:00:00Z") + index * 7 * 86_400_000),
+          everyWeeks: 1,
+          count: 3,
+        })
+      )
+    );
+
+    const booked = results.flatMap((result) => result?.booked ?? []);
+    const starts = booked.map((booking) => booking.startsAt.toISOString());
+    expect(new Set(starts).size).toBe(starts.length);
+    expect(booked.length).toBeGreaterThan(0);
+  });
+
+  it("cancels or moves this and later bookings of a series", async () => {
+    const resource = await openMondays();
+    const service = await newService();
+    const result = await createSeries(db, {
+      serviceId: service.id,
+      resourceId: resource.id,
+      customerId: (await newCustomer()).id,
+      startsAt: at("2030-01-14T15:00:00Z"),
+      everyWeeks: 1,
+      count: 4,
+    });
+    const [first, second, third, fourth] = result?.booked ?? [];
+
+    const cancelled = await cancelSeries(db, third.id);
+    expect(cancelled?.map((booking) => booking.id)).toEqual([third.id, fourth.id]);
+    expect(await cancelSeries(db, third.id)).toBeUndefined();
+
+    // A week later and an hour later: the first lands where the second was.
+    const moved = await moveSeries(db, {
+      id: first.id,
+      resourceId: resource.id,
+      startsAt: at("2030-01-21T16:00:00Z"),
+    });
+    expect(moved?.unfree).toEqual([]);
+    expect(moved?.booked.map((booking) => [booking.id, booking.startsAt.toISOString()])).toEqual([
+      [first.id, "2030-01-21T16:00:00.000Z"],
+      [second.id, "2030-01-28T16:00:00.000Z"],
+    ]);
+
+    await book(service.id, resource.id, at("2030-02-04T17:00:00Z"));
+    const blocked = await moveSeries(db, {
+      id: first.id,
+      resourceId: resource.id,
+      startsAt: at("2030-01-28T17:00:00Z"),
+    });
+    expect(blocked).toEqual({ booked: [], unfree: ["2030-02-04"] });
+    expect((await getBooking(db, second.id))?.startsAt).toEqual(at("2030-01-28T16:00:00Z"));
   });
 
   it("keeps weekly hours and exceptions per resource", async () => {

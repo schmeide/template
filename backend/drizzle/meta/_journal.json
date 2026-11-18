@@ -120,6 +120,13 @@
       "when": 1795030865046,
       "tag": "0016_create_customer_intakes",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1795037937735,
+      "tag": "0017_add_booking_series",
+      "breakpoints": true
     }
   ]
 }
