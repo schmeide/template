@@ -56,9 +56,10 @@ make format         # Prettier only
 make deps           # npm install
 make upgrade        # bump every dependency to its latest version
 make clean          # remove build output and caches
-make shape/list     # list the shapes (these four exist only in the template)
-make shape/keep     # make this copy a project with only NAMES="a b"
-make shape/check    # prove each shape alone passes check, test, and build
+make shape/list     # list the shapes (these five exist only in the template)
+make shape/recipes  # list the recipes for trade-specific apps (docs/recipes/)
+make shape/keep     # make this copy a project with only NAMES="a b" or a RECIPE=name
+make shape/check    # prove each shape alone and each recipe passes check, test, and build
 make shape/registries  # rewrite router.ts and pages.ts from the manifests
 ```
 
