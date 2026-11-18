@@ -35,6 +35,8 @@ import { OrderFulfillment } from "./orderStock/OrderStock.tsx";
 import { BillRent } from "./rentCharges/RentCharges.tsx";
 import { LeaseCharges } from "./rentCharges/RentCharges.tsx";
 import { InvoiceRent } from "./rentCharges/RentCharges.tsx";
+import { RequestCustomer } from "./requestCustomers/RequestCustomer.tsx";
+import { CustomerRequests } from "./requestCustomers/RequestCustomer.tsx";
 import { RequestDeal } from "./requestDeals/RequestDeal.tsx";
 import { DealSource } from "./requestDeals/RequestDeal.tsx";
 import { Requests } from "./requests/Requests.tsx";
@@ -90,6 +92,8 @@ export const slots: readonly Slot[] = [
   { slot: "order-fulfillment", Component: OrderFulfillment },
   { slot: "quote", Component: QuoteConversion },
   { slot: "invoice", Component: InvoiceSource },
+  { slot: "request", Component: RequestCustomer },
+  { slot: "customer", Component: CustomerRequests },
   { slot: "request", Component: RequestDeal },
   { slot: "deal", Component: DealSource },
   { slot: "request", Component: RequestUnit },

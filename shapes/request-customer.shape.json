@@ -1,0 +1,32 @@
+{
+  "requires": ["requests", "customers"],
+  "files": [
+    "backend/src/db/schema/requestCustomers.ts",
+    "backend/src/services/requestCustomers.ts",
+    "backend/src/services/__tests__/requestCustomers.test.ts",
+    "backend/src/routers/requestCustomers.ts",
+    "backend/src/routers/__tests__/requestCustomers.test.ts",
+    "frontend/src/requestCustomers/",
+    "docs/shapes/request-customer.md"
+  ],
+  "routers": [
+    {
+      "key": "requestCustomers",
+      "name": "requestCustomersRouter",
+      "from": "./routers/requestCustomers.ts"
+    }
+  ],
+  "pages": [],
+  "slots": [
+    {
+      "slot": "request",
+      "name": "RequestCustomer",
+      "from": "./requestCustomers/RequestCustomer.tsx"
+    },
+    {
+      "slot": "customer",
+      "name": "CustomerRequests",
+      "from": "./requestCustomers/RequestCustomer.tsx"
+    }
+  ]
+}
