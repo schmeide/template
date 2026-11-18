@@ -29,6 +29,9 @@ import { Orders } from "./orders/Orders.tsx";
 import { Shop } from "./orders/Shop.tsx";
 import { ProductStock } from "./orderStock/OrderStock.tsx";
 import { OrderFulfillment } from "./orderStock/OrderStock.tsx";
+import { BillRent } from "./rentCharges/RentCharges.tsx";
+import { LeaseCharges } from "./rentCharges/RentCharges.tsx";
+import { InvoiceRent } from "./rentCharges/RentCharges.tsx";
 import { RequestDeal } from "./requestDeals/RequestDeal.tsx";
 import { DealSource } from "./requestDeals/RequestDeal.tsx";
 import { Requests } from "./requests/Requests.tsx";
@@ -49,6 +52,7 @@ export const pages: readonly Page[] = [
   { path: "handbook", title: "Handbook", Component: Handbook },
   { path: "invoices", title: "Invoices", Component: Invoices },
   { path: "quotes", title: "Quotes", Component: Quotes },
+  { path: "rent", title: "Bill rent", Component: BillRent },
   { path: "leases", title: "Leases", Component: Leases },
   { path: "notes", title: "Notes", Component: Notes },
   { path: "orders", title: "Orders", Component: Orders },
@@ -68,6 +72,8 @@ export const slots: readonly Slot[] = [
   { slot: "deal", Component: DealRequests },
   { slot: "request", Component: RequestDealLink },
   { slot: "account", Component: AccountBilling },
+  { slot: "lease", Component: LeaseCharges },
+  { slot: "invoice", Component: InvoiceRent },
   { slot: "request", Component: RequestLeave },
   { slot: "account", Component: AccountLeave },
   { slot: "order", Component: OrderInvoice },

@@ -1,0 +1,27 @@
+.rent-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+  margin-block: 16px;
+}
+
+.rent-scroll {
+  overflow-x: auto;
+}
+
+.rent-table {
+  border-collapse: collapse;
+  inline-size: 100%;
+}
+
+.rent-table :is(th, td) {
+  padding: 6px 8px;
+  text-align: start;
+  vertical-align: top;
+  border-block-end: 1px solid #c8c8c8;
+}
+
+.rent-table .rent-date {
+  font-variant-numeric: tabular-nums;
+}

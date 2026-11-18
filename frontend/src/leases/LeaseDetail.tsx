@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
+import { Slots } from "../App.tsx";
 import { focusOnMount, formatDate, localDay } from "../assets/format.ts";
 import { useTRPC } from "../trpc.ts";
 import { formatAmount, formatRent, states, type Lease } from "./format.ts";
@@ -165,6 +166,7 @@ export function LeaseDetail({ id }: { readonly id: number }) {
           )}
         </>
       )}
+      <Slots name="lease" id={id} />
     </main>
   );
 }

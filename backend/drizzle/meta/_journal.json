@@ -183,6 +183,13 @@
       "when": 1795050998831,
       "tag": "0025_create_leases",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1795051138638,
+      "tag": "0026_create_rent_charges",
+      "breakpoints": true
     }
   ]
 }

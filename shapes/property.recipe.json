@@ -1,1 +1,4 @@
-{ "title": "Property management", "shapes": ["assets", "leases", "requests", "invoices"] }
+{
+  "title": "Property management",
+  "shapes": ["assets", "leases", "requests", "invoices", "lease-rent"]
+}
