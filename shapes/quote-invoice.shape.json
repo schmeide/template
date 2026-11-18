@@ -1,0 +1,20 @@
+{
+  "requires": ["invoices"],
+  "files": [
+    "backend/src/db/schema/conversions.ts",
+    "backend/src/services/conversions.ts",
+    "backend/src/services/__tests__/conversions.test.ts",
+    "backend/src/routers/conversions.ts",
+    "backend/src/routers/__tests__/conversions.test.ts",
+    "frontend/src/conversions/",
+    "docs/shapes/quote-invoice.md"
+  ],
+  "routers": [
+    { "key": "conversions", "name": "conversionsRouter", "from": "./routers/conversions.ts" }
+  ],
+  "pages": [],
+  "slots": [
+    { "slot": "quote", "name": "QuoteConversion", "from": "./conversions/Conversion.tsx" },
+    { "slot": "invoice", "name": "InvoiceSource", "from": "./conversions/Conversion.tsx" }
+  ]
+}

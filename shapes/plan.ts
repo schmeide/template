@@ -15,6 +15,13 @@ export type Shape = {
     readonly name: string;
     readonly from: string;
   }[];
+  // Views this shape adds to pages it does not own: a link shape's. `slot` names the place,
+  // which the page exposes with <Slots name="..." id={...} />.
+  readonly slots?: readonly {
+    readonly slot: string;
+    readonly name: string;
+    readonly from: string;
+  }[];
 };
 
 export type Shapes = Readonly<Record<string, Shape>>;
@@ -50,10 +57,20 @@ export const problems = (shapes: Shapes): readonly string[] => {
   ];
 };
 
-// A shape with no page (a building block such as csv) cannot make an app on its own: the frontend
-// has nothing to show and, with no tables, the backend has no migration to run.
+const hasPage = (shapes: Shapes, name: string) => shapes[name].pages.length > 0;
+
+// A building block such as csv cannot make an app on its own: the frontend has nothing to show
+// and, with no tables, the backend has no migration to run. A link shape has no page either, but
+// the shapes it requires do, so it can be kept alone.
 export const selectable = (shapes: Shapes): readonly string[] =>
-  Object.keys(shapes).filter((name) => shapes[name].pages.length > 0);
+  Object.keys(shapes).filter((name) => {
+    try {
+      resolve(shapes, [name]);
+      return true;
+    } catch {
+      return false;
+    }
+  });
 
 // The named shapes in the order given, each followed by whatever it requires.
 export const resolve = (shapes: Shapes, names: readonly string[]): readonly string[] => {
@@ -67,9 +84,10 @@ export const resolve = (shapes: Shapes, names: readonly string[]): readonly stri
     shapes[name].requires.forEach(visit);
   };
   names.forEach(visit);
-  if (!kept.some((name) => shapes[name].pages.length > 0)) {
-    const users = selectable(shapes).filter((name) =>
-      names.some((named) => shapes[name].requires.includes(named))
+  if (!kept.some((name) => hasPage(shapes, name))) {
+    const users = Object.keys(shapes).filter(
+      (name) =>
+        hasPage(shapes, name) && names.some((named) => shapes[name].requires.includes(named))
     );
     throw new Error(
       `${names.join(", ")} has no page, so it cannot be kept alone. Keep a shape that requires it: ${users.join(", ")}`
@@ -148,11 +166,18 @@ export type AppRouter = typeof appRouter;
 
 export const renderPages = (shapes: Shapes, kept: readonly string[]): string => {
   const pages = kept.flatMap((name) => shapes[name].pages);
-  return `${importLines([...pages, { name: "Page", from: "./App.tsx", typeOnly: true }])}
+  const slots = kept.flatMap((name) => shapes[name].slots ?? []);
+  const slotEntries = slots.map(
+    ({ slot, name }) => `  { slot: ${JSON.stringify(slot)}, Component: ${name} },\n`
+  );
+  return `${importLines([...pages, ...slots, { name: "Page, Slot", from: "./App.tsx", typeOnly: true }])}
 
 // One entry per page, in menu order. The first is the home page.
 export const pages: readonly Page[] = [
 ${pages.map(({ path, title, name }) => `  { path: ${JSON.stringify(path)}, title: ${JSON.stringify(title)}, Component: ${name} },`).join("\n")}
 ];
+
+// One entry per view a shape adds to a page it does not own, rendered by <Slots> on that page.
+export const slots: readonly Slot[] = ${slots.length === 0 ? "[]" : `[\n${slotEntries.join("")}]`};
 `;
 };

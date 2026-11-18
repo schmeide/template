@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
+import { Slots } from "../App.tsx";
 import { currencyDigits, formatMoney, formatScaled, parseScaled } from "../money/money.ts";
 import { useTRPC } from "../trpc.ts";
 import { business } from "./business.ts";
@@ -346,6 +347,7 @@ export function InvoiceView({
           Unable to update the {kind.name}: {setStatus.error.message}
         </p>
       )}
+      <Slots name={kind.type} id={id} />
       {status !== "draft" && <ShareLink token={invoice.data.shareToken} kind={kind} />}
       <DocumentBody document={invoice.data} kind={kind} />
       {open && kind.type === "invoice" && <PaymentForm invoice={invoice.data} />}

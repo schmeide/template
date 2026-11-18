@@ -28,8 +28,9 @@ have a type column, not a second copy of the shape.
 
 ## Links between them
 
-None of these is built yet. Each is a shape of its own that requires both sides, and each has an issue. Until they
-exist, staff carry the details across by hand: they add a project by name and type time onto an invoice as lines.
+Each link is a shape of its own that requires both sides. Proposal to invoice is built and kept by this recipe; each
+of the others has an issue, and until it exists staff carry the details across by hand: they add a project by name and
+type time onto an invoice as lines.
 
 - **Won deal to project** (`deals` and `stock`, schmeide/template#42): a deal in a stage that closes as won opens one
   ledger account named after it, once, enforced by unique ids on both sides of a link table and a lock on the deal row.
@@ -40,8 +41,9 @@ exist, staff carry the details across by hand: they add a project by name and ty
   entries. The issue also decides how a reversal of an already billed entry is credited.
 - **Deal to proposals and invoices** (`deals` and `invoices`, schmeide/template#39): a proposal is made from the deal
   for its contact and listed on it. A document belongs to at most one deal.
-- **Proposal to invoice** (`invoices` alone, schmeide/template#38): an accepted proposal becomes a draft invoice with
-  its lines, once. Fixed-fee work is billed this way; hourly work through time.
+- **Proposal to invoice**, built: [quote-invoice](../shapes/quote-invoice.md). "Make invoice" on an accepted
+  proposal makes a draft invoice with its lines, once. Fixed-fee work is billed this way; hourly work through time.
+  Rename its wording with the quotes, in `frontend/src/conversions/Conversion.tsx`.
 
 ## Vocabulary and fields
 

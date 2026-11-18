@@ -27,12 +27,12 @@ The menu follows this order; `customers` comes second, right after the first sha
 
 ## Links between them
 
-None of these is built yet. Each is a shape of its own that requires both sides, and each has an issue. Until they
-exist, staff carry the details across by hand.
+Each link is a shape of its own that requires both sides. The first is built and kept by this recipe; each of the
+others has an issue, and until it exists staff carry the details across by hand.
 
-- **Quote to invoice** (`invoices` alone, schmeide/template#38): an accepted quote becomes a draft invoice with a copy
-  of its lines, for the same customer. A quote converts once, enforced by a unique quote id in a link table and a lock
-  on the quote row. Voiding the invoice does not free the quote.
+- **Quote to invoice**, built: [quote-invoice](../shapes/quote-invoice.md). "Make invoice" on an accepted quote makes
+  a draft invoice with a copy of its lines, for the same customer, once. The quote and the invoice link to each other.
+  Voiding the invoice does not free the quote.
 - **Job to quotes and invoices** (`deals` and `invoices`, schmeide/template#39): from a job, make a quote or invoice for
   its customer and list them on the job. A document belongs to at most one job. A job with no customer gets none.
 - **Job to visits** (`deals` and `bookings`, schmeide/template#40): from a job, book one or more visits through the

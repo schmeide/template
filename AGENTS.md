@@ -110,12 +110,17 @@ UI, follow `.claude/skills/interface-review/SKILL.md`.
 - `frontend/src/<feature>/`: the feature's components, one per page or section,
   using `useTRPC()` with TanStack Query's `useQuery`/`useMutation`.
 - `frontend/src/pages.ts`: one entry per page (`path`, `title`, `Component`), in
-  menu order. The first entry is the home page.
+  menu order. The first entry is the home page. Its `slots` list holds views one
+  feature adds to another feature's page: the page renders
+  `<Slots name="..." id={id} />` from `App.tsx`, and an entry
+  (`slot`, `Component`) fills it.
 - `frontend/src/App.tsx`: shows the page named in the address (`#/<path>`) and a
   menu when there is more than one page. No feature content.
 - `frontend/src/main.tsx`: providers and the tRPC client. No page content.
 - Keep a feature inside its own files. Another feature may import from it, but
-  the only shared files a feature touches are `router.ts` and `pages.ts`.
+  the only shared files a feature touches are `router.ts` and `pages.ts`. A
+  feature that links two others (a quote becomes an invoice) shows its view on
+  their pages through a slot, not by editing them.
 - Tests live in `__tests__/` beside the code: `<name>.test.ts` or `.test.tsx`.
 
 ## API and service split
