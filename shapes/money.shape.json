@@ -1,0 +1,11 @@
+{
+  "requires": [],
+  "files": [
+    "backend/src/services/money.ts",
+    "backend/src/services/__tests__/money.test.ts",
+    "frontend/src/money/",
+    "docs/shapes/money.md"
+  ],
+  "routers": [],
+  "pages": []
+}

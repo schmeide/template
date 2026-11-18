@@ -1,15 +1,12 @@
 {
-  "requires": ["customers"],
+  "requires": ["customers", "money"],
   "files": [
     "backend/src/db/schema/documents.ts",
     "backend/src/services/documents.ts",
-    "backend/src/services/money.ts",
     "backend/src/services/__tests__/documents.test.ts",
-    "backend/src/services/__tests__/money.test.ts",
     "backend/src/routers/invoices.ts",
     "backend/src/routers/__tests__/invoices.test.ts",
     "frontend/src/invoices/",
-    "frontend/src/money/",
     "docs/shapes/invoices.md"
   ],
   "routers": [{ "key": "invoices", "name": "invoicesRouter", "from": "./routers/invoices.ts" }],

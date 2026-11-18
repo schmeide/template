@@ -25,11 +25,11 @@ import {
   listTypes,
   setPublic,
   submitPublicly,
-  takePublicSlot,
   transition,
   updateRequest,
   updateType,
 } from "../services/approval.ts";
+import { takePublicSlot } from "../services/rateLimit.ts";
 import { procedure, router } from "../trpc.ts";
 
 const idSchema = createSelectSchema(approvalRequests).pick({ id: true });
@@ -115,7 +115,7 @@ export const requestsRouter = router({
       found(await getPublicForm(ctx.db, input.token), "This form is not open")
     ),
   submitPublic: procedure.input(publicRequestSchema).mutation(async ({ ctx, input }) => {
-    if (!takePublicSlot(ctx.ip ?? "unknown")) {
+    if (!takePublicSlot(`requests ${ctx.ip ?? "unknown"}`)) {
       throw new TRPCError({
         code: "TOO_MANY_REQUESTS",
         message: "Too many forms sent from here. Wait ten minutes and send it again.",

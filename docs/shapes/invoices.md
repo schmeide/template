@@ -10,10 +10,8 @@ receipts, credit notes and proposals are the same shape with different names, fi
 - **Documents** (`documents`, `document_lines`, `payments` tables, Invoices page): a list with a status filter and
   search, an editor with add, remove and reorder lines and live totals, a read-only view, payments, a print-ready
   layout and a public share link.
-- **Money** (`backend/src/services/money.ts`, `frontend/src/money/`): amounts are integers. Money is in minor units
-  (cents), quantity in thousandths, tax rate in basis points (`2000` is 20%). A line's amount and its tax are each
-  rounded once, half away from zero, and tax is rounded per line before it is summed. The editor asks the server for
-  its totals, so the screen always rounds the way the saved document does.
+- **Money**: from the `money` shape, which this one requires. See [money.md](money.md). The editor asks the server
+  for its totals, so the screen always rounds the way the saved document does.
 - **Numbering**: each document type has a row in `document_counters`. Creating a document increments that row in the
   same transaction, so numbers are sequential with no gaps, and concurrent creates wait for each other instead of
   colliding. `unique(type, number)` backs it up. Documents are voided, never deleted, so no number goes missing.

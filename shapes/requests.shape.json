@@ -1,5 +1,5 @@
 {
-  "requires": [],
+  "requires": ["ratelimit"],
   "files": [
     "backend/src/db/schema/approval.ts",
     "backend/src/services/approval.ts",

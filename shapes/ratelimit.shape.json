@@ -1,0 +1,10 @@
+{
+  "requires": [],
+  "files": [
+    "backend/src/services/rateLimit.ts",
+    "backend/src/services/__tests__/rateLimit.test.ts",
+    "docs/shapes/ratelimit.md"
+  ],
+  "routers": [],
+  "pages": []
+}

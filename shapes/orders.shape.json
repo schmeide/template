@@ -1,0 +1,17 @@
+{
+  "requires": ["money", "ratelimit"],
+  "files": [
+    "backend/src/db/schema/catalog.ts",
+    "backend/src/services/catalog.ts",
+    "backend/src/services/__tests__/catalog.test.ts",
+    "backend/src/routers/orders.ts",
+    "backend/src/routers/__tests__/orders.test.ts",
+    "frontend/src/orders/",
+    "docs/shapes/orders.md"
+  ],
+  "routers": [{ "key": "orders", "name": "ordersRouter", "from": "./routers/orders.ts" }],
+  "pages": [
+    { "path": "orders", "title": "Orders", "name": "Orders", "from": "./orders/Orders.tsx" },
+    { "path": "shop", "title": "Shop", "name": "Shop", "from": "./orders/Shop.tsx" }
+  ]
+}

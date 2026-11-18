@@ -345,24 +345,3 @@ export const submitPublicly = async (
   });
   return { received: true };
 };
-
-// ponytail: per-process memory, so it resets on restart and each replica counts on its own. Move
-// it to a shared store (Postgres or Redis) or the platform's edge when the app runs more than one.
-const windowMs = 10 * 60 * 1000;
-const perWindow = 5;
-const windows = new Map<string, { readonly start: number; count: number }>();
-
-// Whether `address` may send another public submission now: five per ten minutes.
-export const takePublicSlot = (address: string, now = Date.now()): boolean => {
-  for (const [key, window] of windows) {
-    if (now - window.start >= windowMs) windows.delete(key);
-  }
-  const current = windows.get(address);
-  if (!current) {
-    windows.set(address, { start: now, count: 1 });
-    return true;
-  }
-  if (current.count >= perWindow) return false;
-  current.count += 1;
-  return true;
-};

@@ -15,7 +15,6 @@ import {
   listTypes,
   setPublic,
   submitPublicly,
-  takePublicSlot,
   transition,
   updateRequest,
   updateType,
@@ -352,17 +351,6 @@ describe("approval service", () => {
       await expect(
         submitPublicly(db, { token: opened?.publicToken ?? "", contact: "Pat", answers: {} })
       ).rejects.toThrow(InvalidAnswers);
-    });
-
-    it("limits submissions per address in a time window", () => {
-      const address = randomUUID();
-      const start = 1_000_000;
-
-      const taken = Array.from({ length: 6 }, () => takePublicSlot(address, start));
-
-      expect(taken).toEqual([true, true, true, true, true, false]);
-      expect(takePublicSlot(randomUUID(), start)).toBe(true);
-      expect(takePublicSlot(address, start + 60 * 60 * 1000)).toBe(true);
     });
   });
 });
