@@ -1,0 +1,21 @@
+{
+  "requires": [],
+  "files": [
+    "backend/src/db/schema/customers.ts",
+    "backend/src/services/customers.ts",
+    "backend/src/services/__tests__/customers.test.ts",
+    "backend/src/routers/customers.ts",
+    "backend/src/routers/__tests__/customers.test.ts",
+    "frontend/src/customers/",
+    "docs/shapes/customers.md"
+  ],
+  "routers": [{ "key": "customers", "name": "customersRouter", "from": "./routers/customers.ts" }],
+  "pages": [
+    {
+      "path": "customers",
+      "title": "Customers",
+      "name": "Customers",
+      "from": "./customers/Customers.tsx"
+    }
+  ]
+}

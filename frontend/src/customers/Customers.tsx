@@ -97,9 +97,7 @@ function CustomerList() {
         Customers
       </h1>
       {customers.error && <p role="alert">Unable to load customers: {customers.error.message}</p>}
-      {customers.data?.length === 0 && (
-        <p>No customers yet. Add the first one below to start billing them.</p>
-      )}
+      {customers.data?.length === 0 && <p>No customers yet. Add the first one below.</p>}
       <ul>
         {customers.data?.map((customer) => (
           <li key={customer.id}>
