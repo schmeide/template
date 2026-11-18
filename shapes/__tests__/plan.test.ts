@@ -2,10 +2,14 @@ import { describe, expect, it } from "vitest";
 import {
   filesToDelete,
   problems,
+  recipeDocsToDelete,
+  recipeProblems,
+  recipeShapes,
   renderPages,
   renderRouter,
   resolve,
   selectable,
+  type Recipes,
   type Shape,
   type Shapes,
 } from "../plan.ts";
@@ -130,5 +134,57 @@ export const pages: readonly Page[] = [
   { path: "customers", title: "CUSTOMERS", Component: customersPage },
 ];
 `);
+  });
+});
+
+const recipes: Recipes = {
+  billing: { title: "Billing", shapes: ["invoices", "notes"] },
+  // A shape with no page may be named alongside one that has a page (a link shape, say).
+  shop: { title: "Shop", shapes: ["stock", "csv"] },
+};
+
+describe("recipeShapes", () => {
+  it("returns the recipe's shapes in its order", () => {
+    expect(recipeShapes(recipes, "billing")).toEqual(["invoices", "notes"]);
+  });
+
+  it("rejects a name that is not a recipe and lists the real ones", () => {
+    expect(() => recipeShapes(recipes, "bill")).toThrow(
+      "bill is not a recipe. Recipes: billing, shop"
+    );
+  });
+});
+
+describe("recipeProblems", () => {
+  it("finds none in sound recipes", () => {
+    expect(recipeProblems(withCsv, recipes)).toEqual([]);
+  });
+
+  it("reports a recipe with no shapes, an unknown shape, a repeat, and no page", () => {
+    const broken: Recipes = {
+      empty: { title: "Empty", shapes: [] },
+      odd: { title: "Odd", shapes: ["invoice", "notes", "notes"] },
+      blocks: { title: "Blocks", shapes: ["csv"] },
+    };
+
+    expect(recipeProblems(withCsv, broken)).toEqual([
+      "recipe empty names no shapes",
+      "recipe odd names invoice, which is not a shape",
+      "recipe odd names notes more than once",
+      "recipe blocks: csv has no page, so it cannot be kept alone. Keep a shape that requires it: stock",
+    ]);
+  });
+});
+
+describe("recipeDocsToDelete", () => {
+  it("keeps the doc of the recipe a project was made from", () => {
+    expect(recipeDocsToDelete(recipes, "shop")).toEqual(["docs/recipes/billing.md"]);
+  });
+
+  it("deletes every recipe doc when a project was made from names", () => {
+    expect(recipeDocsToDelete(recipes)).toEqual([
+      "docs/recipes/billing.md",
+      "docs/recipes/shop.md",
+    ]);
   });
 });
