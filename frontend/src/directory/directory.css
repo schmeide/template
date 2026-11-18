@@ -1,0 +1,62 @@
+.directory-views ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.directory-form {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  margin-block: 24px;
+}
+
+.directory-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+  margin-block: 12px;
+}
+
+.directory-notes {
+  display: grid;
+  gap: 4px;
+  inline-size: min(100%, 40rem);
+}
+
+.directory-hint {
+  max-inline-size: 40rem;
+  margin-block: 0;
+  color: #555;
+}
+
+.directory-former {
+  padding: 8px 12px;
+  border: 1px solid #c8c8c8;
+  border-radius: 8px;
+}
+
+.directory-scroll {
+  overflow-x: auto;
+}
+
+.directory-table {
+  border-collapse: collapse;
+  inline-size: 100%;
+}
+
+.directory-table :is(th, td) {
+  padding: 6px 8px;
+  text-align: start;
+  vertical-align: top;
+  border-block-end: 1px solid #c8c8c8;
+  overflow-wrap: anywhere;
+}
+
+.directory-table .directory-number {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

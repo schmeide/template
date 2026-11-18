@@ -1,0 +1,21 @@
+{
+  "requires": ["people"],
+  "files": [
+    "backend/src/db/schema/directory.ts",
+    "backend/src/services/directory.ts",
+    "backend/src/services/__tests__/directory.test.ts",
+    "backend/src/routers/directory.ts",
+    "backend/src/routers/__tests__/directory.test.ts",
+    "frontend/src/directory/",
+    "docs/shapes/directory.md"
+  ],
+  "routers": [{ "key": "directory", "name": "directoryRouter", "from": "./routers/directory.ts" }],
+  "pages": [
+    {
+      "path": "directory",
+      "title": "Staff",
+      "name": "Directory",
+      "from": "./directory/Directory.tsx"
+    }
+  ]
+}

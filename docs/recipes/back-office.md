@@ -5,8 +5,9 @@ onboarding. Made with `make shape/keep RECIPE=back-office` (`shapes/back-office.
 
 ## Shapes and the app each becomes
 
-The menu follows this order: Requests (the home page), Leave balances, Assets and Handbook, renamed as below.
-`requests` and `handbook` both require `people`, so the "Acting as" names are one list of staff across the app.
+The menu follows this order: Requests (the home page), Staff, Leave balances, Assets and Handbook, renamed as below.
+`requests`, `directory` and `handbook` all require `people`, so the "Acting as" names are one list of staff across
+the app.
 
 - **Requests**, the home page, from [requests](../shapes/requests.md), which ships with leave. Follow
   [Turning leave requests into another app](../shapes/requests.md#turning-leave-requests-into-another-app) and keep
@@ -19,6 +20,10 @@ The menu follows this order: Requests (the home page), Leave balances, Assets an
 
   Name the manager as approver on Leave and the finance lead on Expense claim.
 
+- **Staff**, from [directory](../shapes/directory.md), which ships as exactly this: every name in "Acting as" with
+  their email, phone, job title, team, start and leaving dates. A leaver gets a leaving date and moves to former
+  staff the next day; nobody is deleted, so their requests and read confirmations still name them. Add new starters
+  here with "Add a person", which also puts their name in "Acting as".
 - **Leave balances**, from [stock](../shapes/stock.md). An item is one person's balance of one kind of leave ("Ana,
   vacation"), the unit is days and an entry is a whole number of days. Each year starts with an `in` entry for the
   allowance; carry-over and corrections are adjustments. Turn on "Allow stock below zero" on every balance, so taking
@@ -49,9 +54,9 @@ assets and staff share one table, or `people` grown into a directory. This recip
   export of the register.
 
 `people` is a building block with no page, and `requests` and `handbook` require it, so growing it in place would add
-a directory page to every project that keeps either. The directory is a shape of its own that requires `people`
-(schmeide/template#55). It is not built yet. Until it exists, the names in "Acting as" are the staff list and the
-handbook can hold a "Who is who" page with contact details.
+a directory page to every project that keeps either. The directory is a shape of its own,
+[directory](../shapes/directory.md), that requires `people`: a `directory_entries` row per person holds the details,
+and the Staff page lists every person in `approval_people` with their entry where they have one.
 
 ## Links between them
 
@@ -76,7 +81,6 @@ approves leave records an `out` entry on the person's balance by hand, with the 
 
 ## Not covered yet
 
-- **The staff directory**, as described under [The staff directory](#the-staff-directory) (schmeide/template#55).
 - **Roles** (only managers approve, only HR sees salaries): every staff view is open to anyone with the app's address
   until platform sign-in exists (schmeide/schmeide.app#84). Keep salaries, bank details, home addresses and health
   details out of every field and page until then.
@@ -86,5 +90,6 @@ approves leave records an `out` entry on the person's balance by hand, with the 
 - **Half days**: the ledger counts whole units. Store half days and format them as days, as
   [What usually varies](../shapes/stock.md#what-usually-varies) describes for fractions.
 - **An asset's holder as a person**: the owner is free text, so a renamed or misspelled name loses the asset from a
-  search. A link from `assets` to `people` would fix it; it waits for the directory.
+  search. A link from `assets` to `people` would fix it, and the directory now gives that link a page to show a person's
+  assets on.
 - **Reminders** (a page to read, a request to decide, an asset's warranty ending): nothing sends email.
