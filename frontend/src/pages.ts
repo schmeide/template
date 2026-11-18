@@ -1,4 +1,5 @@
 import type { Page } from "./App.tsx";
+import { Assets } from "./assets/Assets.tsx";
 import { Bookings } from "./bookings/Bookings.tsx";
 import { BookOnline } from "./bookings/BookOnline.tsx";
 import { Customers } from "./customers/Customers.tsx";
@@ -10,6 +11,7 @@ import { Stock } from "./stock/Stock.tsx";
 
 // One entry per page, in menu order. The first is the home page.
 export const pages: readonly Page[] = [
+  { path: "assets", title: "Assets", Component: Assets },
   { path: "bookings", title: "Bookings", Component: Bookings },
   { path: "book", title: "Book online", Component: BookOnline },
   { path: "customers", title: "Customers", Component: Customers },

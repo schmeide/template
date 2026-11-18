@@ -7,6 +7,7 @@ import {
   renderPages,
   renderRouter,
   resolve,
+  selectable,
   type Shape,
   type Shapes,
 } from "./plan.ts";
@@ -54,8 +55,10 @@ const remove = (file: string) => {
 
 const [command, ...names] = process.argv.slice(2);
 
+// `list` names the shapes that can be kept alone; `shape/check` checks each of them, and a
+// building block is checked through the shapes that require it.
 if (command === "list") {
-  console.log(Object.keys(shapes).join("\n"));
+  console.log(selectable(shapes).join("\n"));
 } else if (command === "registries") {
   writeRegistries(Object.keys(shapes));
 } else if (command === "keep" && names.length > 0) {

@@ -5,6 +5,7 @@ import {
   renderPages,
   renderRouter,
   resolve,
+  selectable,
   type Shape,
   type Shapes,
 } from "../plan.ts";
@@ -25,6 +26,10 @@ const shapes: Shapes = {
   portal: shape("portal", ["invoices"]),
 };
 
+// A building block: code other shapes require, with no page of its own.
+const csv: Shape = { requires: [], files: ["backend/src/services/csv.ts"], routers: [], pages: [] };
+const withCsv: Shapes = { ...shapes, csv, stock: shape("stock", ["csv"]) };
+
 describe("resolve", () => {
   it("keeps the named shapes in the order given, then what they require", () => {
     expect(resolve(shapes, ["notes", "portal"])).toEqual([
@@ -43,6 +48,22 @@ describe("resolve", () => {
     expect(() => resolve(shapes, ["invoice"])).toThrow(
       "invoice is not a shape. Shapes: customers, invoices, notes, portal"
     );
+  });
+
+  it("keeps a building block when a shape that requires it is named", () => {
+    expect(resolve(withCsv, ["csv", "stock"])).toEqual(["csv", "stock"]);
+  });
+
+  it("rejects a building block kept alone and names the shapes that require it", () => {
+    expect(() => resolve(withCsv, ["csv"])).toThrow(
+      "csv has no page, so it cannot be kept alone. Keep a shape that requires it: stock"
+    );
+  });
+});
+
+describe("selectable", () => {
+  it("lists the shapes that have a page, leaving out building blocks", () => {
+    expect(selectable(withCsv)).toEqual(["customers", "invoices", "notes", "portal", "stock"]);
   });
 });
 

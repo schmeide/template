@@ -43,6 +43,13 @@
       "when": 1794959347816,
       "tag": "0005_create_stock",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794960653192,
+      "tag": "0006_create_assets",
+      "breakpoints": true
     }
   ]
 }

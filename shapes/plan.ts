@@ -50,6 +50,11 @@ export const problems = (shapes: Shapes): readonly string[] => {
   ];
 };
 
+// A shape with no page (a building block such as csv) cannot make an app on its own: the frontend
+// has nothing to show and, with no tables, the backend has no migration to run.
+export const selectable = (shapes: Shapes): readonly string[] =>
+  Object.keys(shapes).filter((name) => shapes[name].pages.length > 0);
+
 // The named shapes in the order given, each followed by whatever it requires.
 export const resolve = (shapes: Shapes, names: readonly string[]): readonly string[] => {
   const kept: string[] = [];
@@ -62,6 +67,14 @@ export const resolve = (shapes: Shapes, names: readonly string[]): readonly stri
     shapes[name].requires.forEach(visit);
   };
   names.forEach(visit);
+  if (!kept.some((name) => shapes[name].pages.length > 0)) {
+    const users = selectable(shapes).filter((name) =>
+      names.some((named) => shapes[name].requires.includes(named))
+    );
+    throw new Error(
+      `${names.join(", ")} has no page, so it cannot be kept alone. Keep a shape that requires it: ${users.join(", ")}`
+    );
+  }
   return kept;
 };
 

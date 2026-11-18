@@ -3,7 +3,7 @@
 REGISTRIES := backend/src/router.ts frontend/src/pages.ts
 
 .PHONY: shape/list
-shape/list: node_modules ## List the shapes in this template
+shape/list: node_modules ## List the shapes that can be kept alone (building blocks with no page are left out)
 	node shapes/shape.ts list
 
 .PHONY: shape/registries
