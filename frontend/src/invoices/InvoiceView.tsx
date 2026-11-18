@@ -321,7 +321,10 @@ export function InvoiceView({
       </div>
       {confirmingVoid && (
         <div className="invoice-actions invoice-no-print">
-          <p>Void {reference}? It can no longer be edited or sent. This cannot be undone.</p>
+          <p>
+            Void {reference}? It can no longer be edited, sent or{" "}
+            {kind.type === "invoice" ? "paid" : "accepted"}. This cannot be undone.
+          </p>
           <button
             type="button"
             onClick={() =>
