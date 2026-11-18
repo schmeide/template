@@ -28,18 +28,16 @@ have a type column, not a second copy of the shape.
 
 ## Links between them
 
-Each link is a shape of its own that requires both sides. Won deal to project, deal to proposals and invoices, and
-proposal to invoice are built and kept by this recipe; time to invoice has an issue, and until it exists staff carry
-the details across by hand: they type time onto an invoice as lines.
+Each link is a shape of its own that requires both sides. All of them are built and kept by this recipe.
 
 - **Won deal to project**, built: [deal-account](../shapes/deal-account.md). "Open project" on a deal in a stage that
   closes as won opens one ledger account named after it, once. Moving the deal out of that stage keeps the project.
   Rename its wording and the `#/stock` links with the time pages, in `frontend/src/dealAccounts/DealAccount.tsx`.
-- **Time to invoice** (`stock` and `invoices`, schmeide/template#43): for a project and a date range, the unbilled
-  billable entries become lines on a draft invoice for the project's client at its hourly rate. The client and rate
-  live in the link's own table. An entry lands on at most one invoice that is not void: billing locks the project's
-  account row and writes the invoice and the billed-entry rows in one transaction, and voiding the invoice frees its
-  entries. The issue also decides how a reversal of an already billed entry is credited.
+- **Time to invoice**, built: [entries-invoice](../shapes/entries-invoice.md). On a project, set its client and
+  hourly rate, then for a date range "Create invoice" makes the unbilled billable entries into lines on a draft
+  invoice, once; voiding the invoice frees them. A reversal of a billed entry is credited on the next invoice. Set
+  `billableKinds` to `["billable"]` when time tracking renames the kinds, and rename its wording in
+  `frontend/src/billing/Billing.tsx`.
 - **Deal to proposals and invoices**, built: [deal-documents](../shapes/deal-documents.md). "New quote" or "New
   invoice" on a deal makes a draft for its contact and lists it on the deal with its number, status and total. A
   document belongs to at most one deal. Its buttons follow the rename of quotes; rename its heading and messages as

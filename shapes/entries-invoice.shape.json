@@ -1,0 +1,15 @@
+{
+  "requires": ["stock", "invoices"],
+  "files": [
+    "backend/src/db/schema/billing.ts",
+    "backend/src/services/billing.ts",
+    "backend/src/services/__tests__/billing.test.ts",
+    "backend/src/routers/billing.ts",
+    "backend/src/routers/__tests__/billing.test.ts",
+    "frontend/src/billing/",
+    "docs/shapes/entries-invoice.md"
+  ],
+  "routers": [{ "key": "billing", "name": "billingRouter", "from": "./routers/billing.ts" }],
+  "pages": [],
+  "slots": [{ "slot": "account", "name": "AccountBilling", "from": "./billing/Billing.tsx" }]
+}
