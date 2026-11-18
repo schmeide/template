@@ -28,9 +28,9 @@ have a type column, not a second copy of the shape.
 
 ## Links between them
 
-Each link is a shape of its own that requires both sides. Proposal to invoice is built and kept by this recipe; each
-of the others has an issue, and until it exists staff carry the details across by hand: they add a project by name and
-type time onto an invoice as lines.
+Each link is a shape of its own that requires both sides. Deal to proposals and invoices, and proposal to invoice, are
+built and kept by this recipe; each of the others has an issue, and until it exists staff carry the details across by
+hand: they add a project by name and type time onto an invoice as lines.
 
 - **Won deal to project** (`deals` and `stock`, schmeide/template#42): a deal in a stage that closes as won opens one
   ledger account named after it, once, enforced by unique ids on both sides of a link table and a lock on the deal row.
@@ -39,8 +39,10 @@ type time onto an invoice as lines.
   live in the link's own table. An entry lands on at most one invoice that is not void: billing locks the project's
   account row and writes the invoice and the billed-entry rows in one transaction, and voiding the invoice frees its
   entries. The issue also decides how a reversal of an already billed entry is credited.
-- **Deal to proposals and invoices** (`deals` and `invoices`, schmeide/template#39): a proposal is made from the deal
-  for its contact and listed on it. A document belongs to at most one deal.
+- **Deal to proposals and invoices**, built: [deal-documents](../shapes/deal-documents.md). "New quote" or "New
+  invoice" on a deal makes a draft for its contact and lists it on the deal with its number, status and total. A
+  document belongs to at most one deal. Its buttons follow the rename of quotes; rename its heading and messages as
+  [its doc](../shapes/deal-documents.md#what-usually-varies) describes.
 - **Proposal to invoice**, built: [quote-invoice](../shapes/quote-invoice.md). "Make invoice" on an accepted
   proposal makes a draft invoice with its lines, once. Fixed-fee work is billed this way; hourly work through time.
   Rename its wording with the quotes, in `frontend/src/conversions/Conversion.tsx`.

@@ -1,1 +1,4 @@
-{ "title": "Agency or consultancy", "shapes": ["deals", "stock", "invoices", "quote-invoice"] }
+{
+  "title": "Agency or consultancy",
+  "shapes": ["deals", "stock", "invoices", "quote-invoice", "deal-documents"]
+}

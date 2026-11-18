@@ -78,6 +78,13 @@
       "when": 1795027451307,
       "tag": "0010_create_document_conversions",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1795028322768,
+      "tag": "0011_create_deal_documents",
+      "breakpoints": true
     }
   ]
 }

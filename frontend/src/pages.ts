@@ -6,6 +6,7 @@ import { QuoteConversion } from "./conversions/Conversion.tsx";
 import { InvoiceSource } from "./conversions/Conversion.tsx";
 import { Customers } from "./customers/Customers.tsx";
 import { Dashboard } from "./dashboard/Dashboard.tsx";
+import { DealDocuments } from "./dealDocuments/DealDocuments.tsx";
 import { Deals } from "./deals/Deals.tsx";
 import { Handbook } from "./handbook/Handbook.tsx";
 import { Invoices } from "./invoices/Invoices.tsx";
@@ -36,6 +37,7 @@ export const pages: readonly Page[] = [
 
 // One entry per view a shape adds to a page it does not own, rendered by <Slots> on that page.
 export const slots: readonly Slot[] = [
+  { slot: "deal", Component: DealDocuments },
   { slot: "quote", Component: QuoteConversion },
   { slot: "invoice", Component: InvoiceSource },
 ];
