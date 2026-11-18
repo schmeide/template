@@ -3,6 +3,7 @@ import { bookingsRouter } from "./routers/bookings.ts";
 import { conversionsRouter } from "./routers/conversions.ts";
 import { customersRouter } from "./routers/customers.ts";
 import { dashboardRouter } from "./routers/dashboard.ts";
+import { dealAccountsRouter } from "./routers/dealAccounts.ts";
 import { dealDocumentsRouter } from "./routers/dealDocuments.ts";
 import { dealsRouter } from "./routers/deals.ts";
 import { handbookRouter } from "./routers/handbook.ts";
@@ -23,6 +24,7 @@ export const appRouter = router({
   bookings: bookingsRouter,
   customers: customersRouter,
   dashboard: dashboardRouter,
+  dealAccounts: dealAccountsRouter,
   visits: visitsRouter,
   dealDocuments: dealDocumentsRouter,
   deals: dealsRouter,

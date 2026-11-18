@@ -28,12 +28,13 @@ have a type column, not a second copy of the shape.
 
 ## Links between them
 
-Each link is a shape of its own that requires both sides. Deal to proposals and invoices, and proposal to invoice, are
-built and kept by this recipe; each of the others has an issue, and until it exists staff carry the details across by
-hand: they add a project by name and type time onto an invoice as lines.
+Each link is a shape of its own that requires both sides. Won deal to project, deal to proposals and invoices, and
+proposal to invoice are built and kept by this recipe; time to invoice has an issue, and until it exists staff carry
+the details across by hand: they type time onto an invoice as lines.
 
-- **Won deal to project** (`deals` and `stock`, schmeide/template#42): a deal in a stage that closes as won opens one
-  ledger account named after it, once, enforced by unique ids on both sides of a link table and a lock on the deal row.
+- **Won deal to project**, built: [deal-account](../shapes/deal-account.md). "Open project" on a deal in a stage that
+  closes as won opens one ledger account named after it, once. Moving the deal out of that stage keeps the project.
+  Rename its wording and the `#/stock` links with the time pages, in `frontend/src/dealAccounts/DealAccount.tsx`.
 - **Time to invoice** (`stock` and `invoices`, schmeide/template#43): for a project and a date range, the unbilled
   billable entries become lines on a draft invoice for the project's client at its hourly rate. The client and rate
   live in the link's own table. An entry lands on at most one invoice that is not void: billing locks the project's
