@@ -14,6 +14,8 @@ same shape with a different unit, entry kinds and floor.
   note or an order number.
 - **Item page** (`#/stock/<id>`): the balance, a form to record an entry, the history newest first with a Reverse
   button on each entry, and the item's settings.
+- **Slot**: the item page renders `<Slots name="account" id={id} />` below the title, where link shapes add their
+  views. With no link shape kept it renders nothing.
 - **Period summary** (`#/stock/summary`): for a date range, each item's total per kind and its net change, and a
   CSV download of every entry in the range.
 

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState, type FormEvent } from "react";
+import { Slots } from "../App.tsx";
 import { useTRPC } from "../trpc.ts";
 import {
   focusOnMount,
@@ -31,6 +32,7 @@ export function AccountDetail({ id }: { readonly id: number }) {
           <h1 ref={focusOnMount} tabIndex={-1}>
             {item.data.name}
           </h1>
+          <Slots name="account" id={id} />
           <p className="stock-balance">
             {formatQuantity(item.data.balance, item.data.unit)} in stock
           </p>

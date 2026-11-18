@@ -99,6 +99,13 @@
       "when": 1795030534200,
       "tag": "0013_create_request_deals",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1795030635578,
+      "tag": "0014_create_deal_accounts",
+      "breakpoints": true
     }
   ]
 }

@@ -30,7 +30,7 @@ const balanceOf = async (tx: Tx, accountId: number) => {
   return balance;
 };
 
-export const createAccount = async (db: Db, input: Readonly<NewAccount>): Promise<Account> => {
+export const createAccount = async (db: Db | Tx, input: Readonly<NewAccount>): Promise<Account> => {
   const [account] = await db.insert(ledgerAccounts).values(input).returning();
   return account;
 };

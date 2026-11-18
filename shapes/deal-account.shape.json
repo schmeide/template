@@ -1,0 +1,20 @@
+{
+  "requires": ["deals", "stock"],
+  "files": [
+    "backend/src/db/schema/dealAccounts.ts",
+    "backend/src/services/dealAccounts.ts",
+    "backend/src/services/__tests__/dealAccounts.test.ts",
+    "backend/src/routers/dealAccounts.ts",
+    "backend/src/routers/__tests__/dealAccounts.test.ts",
+    "frontend/src/dealAccounts/",
+    "docs/shapes/deal-account.md"
+  ],
+  "routers": [
+    { "key": "dealAccounts", "name": "dealAccountsRouter", "from": "./routers/dealAccounts.ts" }
+  ],
+  "pages": [],
+  "slots": [
+    { "slot": "deal", "name": "DealAccount", "from": "./dealAccounts/DealAccount.tsx" },
+    { "slot": "account", "name": "AccountDeal", "from": "./dealAccounts/DealAccount.tsx" }
+  ]
+}
