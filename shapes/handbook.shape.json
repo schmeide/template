@@ -1,0 +1,21 @@
+{
+  "requires": ["people"],
+  "files": [
+    "backend/src/db/schema/handbook.ts",
+    "backend/src/services/handbook.ts",
+    "backend/src/services/__tests__/handbook.test.ts",
+    "backend/src/routers/handbook.ts",
+    "backend/src/routers/__tests__/handbook.test.ts",
+    "frontend/src/handbook/",
+    "docs/shapes/handbook.md"
+  ],
+  "routers": [{ "key": "handbook", "name": "handbookRouter", "from": "./routers/handbook.ts" }],
+  "pages": [
+    {
+      "path": "handbook",
+      "title": "Handbook",
+      "name": "Handbook",
+      "from": "./handbook/Handbook.tsx"
+    }
+  ]
+}

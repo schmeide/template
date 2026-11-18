@@ -5,7 +5,6 @@ import {
   approvalRequests,
   approvalTypes,
   listFilterSchema,
-  newPersonSchema,
   newRequestSchema,
   newTypeSchema,
   publicRequestSchema,
@@ -14,13 +13,11 @@ import {
   typeUpdateSchema,
 } from "../db/schema/approval.ts";
 import {
-  addPerson,
   createRequest,
   createType,
   getPublicForm,
   getRequest,
   InvalidAnswers,
-  listPeople,
   listRequests,
   listTypes,
   setPublic,
@@ -73,11 +70,6 @@ const noType = "No request type has that id";
 // it is acting as; take the actor from the signed-in user once platform sign-in exists
 // (schmeide/schmeide.app#84).
 export const requestsRouter = router({
-  people: procedure.query(({ ctx }) => listPeople(ctx.db)),
-  addPerson: procedure
-    .input(newPersonSchema)
-    .mutation(({ ctx, input }) => addPerson(ctx.db, input)),
-
   types: procedure.query(({ ctx }) => listTypes(ctx.db)),
   createType: procedure
     .input(newTypeSchema)

@@ -1,0 +1,22 @@
+.people-actor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 8px 12px;
+  border: 1px solid #c8c8c8;
+  border-radius: 8px;
+}
+
+.people-add {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.people-hint {
+  flex-basis: 100%;
+  margin: 0;
+  color: #555;
+}

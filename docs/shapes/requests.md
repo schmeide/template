@@ -6,8 +6,9 @@ client intake are the same shape with different request types, fields and approv
 
 ## What it has
 
-- **People** (`approval_people`): the names in the "Acting as" picker at the top of every Requests view. Pick a name
-  or add one. The choice is kept in the browser. See [Who is who](#who-is-who).
+- **People**: the names in the "Acting as" picker at the top of every Requests view. Pick a name or add one. The
+  choice is kept in the browser. They come from the `people` shape, which this one requires and shares with
+  `handbook`; see [people.md](people.md) and [Who is who](#who-is-who).
 - **Request types** (`approval_types`, `#/requests/types`): a name, the fields it asks for, an optional approver and
   an optional public link. A database with no types gets `defaultTypes` from `backend/src/services/approval.ts` the
   first time the types load: Leave, with a kind of leave, a first and a last day, and a note.
@@ -55,7 +56,7 @@ plain list and sent with each change as `actorId`. The rules are enforced on the
 decides a request filed under their own name, and only the named approver decides when a type has one. But anyone
 can pick any name, so **the self-approval rule is only as strong as that choice**. Once sign-in exists, take the
 actor from the signed-in user in the tRPC context, drop `actorId` from the inputs, point `approval_people` at the
-platform's users, and remove the picker (`frontend/src/requests/ActingAs.tsx`). These places carry a `ponytail:`
+platform's users, and remove the picker (`frontend/src/people/ActingAs.tsx`). These places carry a `ponytail:`
 comment.
 
 ## Public intake

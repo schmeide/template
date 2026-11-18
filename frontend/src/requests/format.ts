@@ -2,7 +2,7 @@ import type { inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "../../../backend/src/router.ts";
 
 export type Outputs = inferRouterOutputs<AppRouter>["requests"];
-export type Person = Outputs["people"][number];
+export type { Person } from "../people/ActingAs.tsx";
 export type RequestType = Outputs["types"][number];
 export type Field = RequestType["fields"][number];
 export type Detail = Outputs["get"];

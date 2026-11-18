@@ -1,7 +1,7 @@
 # CSV
 
 Reading and writing CSV files, for shapes that import or export them. It has no tables and no page: nobody keeps it
-on its own, and `make shape/keep` refuses to. It comes with the shapes that require it (`stock` and `assets`).
+on its own, and `make shape/keep` refuses to. It comes with the shapes that require it (`stock`, `assets` and `dashboard`).
 
 ## What it has
 
