@@ -143,7 +143,11 @@ upgrade/ts: node_modules ## Upgrade npm dependencies
 ##@ Code Quality
 
 .PHONY: check
-check: check/ts ## Check code quality
+check: check/ts check/migrations ## Check code quality, and that migrations only add to the database (BASE=<commit>)
+
+.PHONY: check/migrations
+check/migrations: ## Check that migrations only add: those since BASE=<commit>, or every one after 0000
+	node scripts/check-migrations.ts "$(BASE)"
 
 .PHONY: check/ts
 check/ts: node_modules ## Check code quality (eslint, tsc, prettier, markdown)

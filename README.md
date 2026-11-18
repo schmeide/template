@@ -50,7 +50,8 @@ make test           # throwaway Postgres, migrate, run all tests, tear down
 make test/watch     # same, in watch mode
 make test/run       # migrate and test against an existing $DATABASE_URL (no Docker)
 make build          # typecheck everything and bundle frontend/dist
-make check          # ESLint, tsc, Prettier, markdownlint
+make check          # ESLint, tsc, Prettier, markdownlint, check/migrations
+make check/migrations  # migrations only add to the database (BASE=<commit>)
 make fix            # apply lint and format fixes
 make format         # Prettier only
 make deps           # npm install
