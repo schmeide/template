@@ -69,11 +69,8 @@ Abuse protection:
 
 - **Honeypot**: a `website` input placed off screen and `inert`, so people never reach it. A submission with it
   filled gets the same answer and is not kept.
-- **Rate limit**: five submissions per address per ten minutes (`takePublicSlot`), answered with
-  `TOO_MANY_REQUESTS`. The address comes from `X-Real-IP`, which `frontend/nginx.conf` sets to the address nginx saw.
-  The count lives in the backend's memory: it resets on restart and each replica counts on its own, and behind
-  another proxy every visitor shares that proxy's address. Move it to a shared store or the platform's edge when that
-  matters.
+- **Rate limit**: five submissions per address per ten minutes, answered with `TOO_MANY_REQUESTS`. It comes from
+  the `ratelimit` shape, which this one requires; see [ratelimit.md](ratelimit.md).
 
 ## What usually varies
 

@@ -50,6 +50,13 @@
       "when": 1794960653192,
       "tag": "0006_create_assets",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794961817245,
+      "tag": "0007_create_orders",
+      "breakpoints": true
     }
   ]
 }

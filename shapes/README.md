@@ -70,7 +70,8 @@ single implementation" rule.
 
 A building block usually has no page and often no tables. `make shape/list` leaves such shapes out, so `shape/check`
 does not run one alone; it is checked with every shape that requires it. `csv` (owned by `stock` until `assets` also
-needed it) is the first.
+needed it) is the first; `money` (from `invoices`) and `ratelimit` (from `requests`) moved out when `orders` needed
+them.
 
 ### How a shape becomes a named app
 
