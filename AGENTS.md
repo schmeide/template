@@ -77,7 +77,8 @@ UI, follow `.claude/skills/interface-review/SKILL.md`.
 | Target                    | What it does                                              |
 | ------------------------- | --------------------------------------------------------- |
 | `make test`               | Throwaway Postgres, migrate, run all tests, tear down     |
-| `make check`              | ESLint, `tsc` for both workspaces, Prettier, markdownlint |
+| `make check`              | ESLint, `tsc`, Prettier, markdownlint, `check/migrations` |
+| `make check/migrations`   | Migrations only add (`BASE=<commit>`: those since it)     |
 | `make build`              | Typecheck and bundle `frontend/dist`                      |
 | `make fix`                | Apply ESLint, Prettier, and markdownlint fixes            |
 | `make db/generate NAME=x` | Generate a migration from `backend/src/db/schema/`        |
@@ -143,6 +144,43 @@ and reusable from scripts and jobs.
 - Schema change workflow: edit the feature's file in `backend/src/db/schema/`,
   run `make db/generate NAME=...`,
   commit the generated SQL and `meta/` files with the change.
+
+## Database changes (always)
+
+An earlier version of the app may be put live against today's database, so a
+migration may only add to it. Older code must still run against the newer
+schema. A migration may:
+
+- create a table, index, or enum, or add a value to an enum;
+- add a column that is nullable or has a default (a generated column counts);
+- add a foreign key, check, or unique constraint (or unique index) only on a
+  table, or a foreign key only on a column, created in the same migration.
+
+It may not drop or rename a table, column, enum value, or constraint; change a
+column's type, default, or nullability (`SET`/`DROP NOT NULL`,
+`SET`/`DROP DEFAULT`); add a `NOT NULL` column without a default; change data
+(`INSERT`, `UPDATE`, `DELETE`, `TRUNCATE`); or edit, delete, or reorder a
+migration file that existed at `BASE`. Any other statement is refused too. An
+index on a large live table briefly blocks writes to it while it builds.
+
+`make check/migrations` enforces this, and `make check` runs it: with
+`BASE=<commit>`, on the migrations added since that commit; without, on every
+migration after `0000`. Drizzle's rename comes out as a drop plus an add, so
+it is refused too.
+
+Add, don't change. To rename or change a column, add the new one, write code
+that uses it (copying from the old one when reading), and leave the old one in
+place. Keep writing the old one while it is `NOT NULL`, which also keeps older
+versions current. A field that is no longer needed stays in the table, unused.
+For example, to rename `notes.body` to `notes.text`:
+
+```ts
+// backend/src/db/schema/notes.ts: keep `body` as it is, add a nullable `text`.
+body: varchar("body", { length: 500 }).notNull(),
+text: varchar("text", { length: 500 }),
+
+// The service writes both and reads `note.text ?? note.body`.
+```
 
 ## Test-Driven Development (strongly preferred)
 

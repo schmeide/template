@@ -17,7 +17,7 @@
     "test:watch": "vitest",
     "check-updates": "ncu -u --workspaces --root",
     "lint:eslint": "eslint .",
-    "lint:types": "tsc -p backend && tsc -p frontend",
+    "lint:types": "tsc -p backend && tsc -p frontend && tsc -p scripts",
     "lint:prettier": "prettier --check .",
     "lint:md": "markdownlint-cli2 \"**/*.md\" \"!**/node_modules/**\" \"!.claude/skills/**\"",
     "lint": "concurrently -m1 npm:lint:*",
