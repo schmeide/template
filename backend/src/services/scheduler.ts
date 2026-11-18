@@ -1,4 +1,5 @@
-import { and, asc, eq, gt, gte, inArray, lt, lte, ne } from "drizzle-orm";
+import { randomUUID } from "node:crypto";
+import { and, asc, eq, gt, gte, inArray, lt, lte, ne, notInArray } from "drizzle-orm";
 import type { Db } from "../db/client.ts";
 import { customers } from "../db/schema/customers.ts";
 import {
@@ -13,6 +14,7 @@ import {
   type MoveBooking,
   type NewBooking,
   type NewException,
+  type NewSeries,
   type NewResource,
   type NewRule,
   type NewService,
@@ -24,7 +26,7 @@ import {
   type ServiceUpdate,
   type SlotSearch,
 } from "../db/schema/scheduler.ts";
-import { addDays, instantOf, localDate, weekdayOf } from "./zonedTime.ts";
+import { addDays, instantOf, localDate, localTime, weekdayOf } from "./zonedTime.ts";
 
 type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
 
@@ -32,6 +34,7 @@ const minute = 60_000;
 // Slots start every quarter hour from the opening time.
 const step = 15 * minute;
 const live = ne(schedulerBookings.status, "cancelled");
+const open = inArray(schedulerBookings.status, ["booked", "confirmed"]);
 
 export type Slot = {
   readonly resourceId: number;
@@ -145,7 +148,7 @@ const midnightUtc = (date: string) => new Date(Date.parse(date));
 // hours. Each opening is turned into instants on its own day, so daylight-saving changes give the
 // real length of that day's hours. A slot is free when nothing live overlaps it and its buffer,
 // or when the only overlaps are the same service at the same start with seats left (a class).
-// `ignore` leaves one booking out, for moving it.
+// `ignore` leaves bookings out, for moving them.
 const freeSlots = async (
   tx: Tx,
   service: Service,
@@ -153,7 +156,7 @@ const freeSlots = async (
   from: string,
   to: string,
   now: Date,
-  ignore = -1
+  ignore: readonly number[] = []
 ): Promise<readonly Slot[]> => {
   if (resources.length === 0) return [];
   const ids = resources.map((resource) => resource.id);
@@ -186,7 +189,7 @@ const freeSlots = async (
       and(
         inArray(schedulerBookings.resourceId, ids),
         live,
-        ne(schedulerBookings.id, ignore),
+        notInArray(schedulerBookings.id, [...ignore]),
         lt(schedulerBookings.startsAt, midnightUtc(addDays(to, 3))),
         gt(schedulerBookings.endsAt, midnightUtc(addDays(from, -2)))
       )
@@ -288,7 +291,7 @@ const place = async (
   serviceId: number,
   startsAt: Date,
   now: Date,
-  ignore = -1
+  ignore: readonly number[] = []
 ): Promise<Placement | undefined> => {
   const service = await findService(tx, serviceId);
   if (!service) return undefined;
@@ -304,7 +307,7 @@ const place = async (
         eq(schedulerBookings.resourceId, resource.id),
         eq(schedulerBookings.startsAt, startsAt),
         live,
-        ne(schedulerBookings.id, ignore)
+        notInArray(schedulerBookings.id, [...ignore])
       )
     );
   const seats = new Set(taken.map(({ seat }) => seat));
@@ -331,7 +334,6 @@ const insertBooking = (
     return { booking, resource };
   });
 
-// ponytail: one booking at a time; recurring bookings (the same slot every week) are a follow-up.
 // ponytail: no reminders before a booking; sending them needs email and a job runner, a follow-up.
 // Takes a transaction too, so a caller can write its own rows with the booking, atomically.
 export const createBooking = async (
@@ -391,15 +393,10 @@ export const moveBooking = (
     const [booking] = await tx
       .select()
       .from(schedulerBookings)
-      .where(
-        and(
-          eq(schedulerBookings.id, id),
-          inArray(schedulerBookings.status, ["booked", "confirmed"])
-        )
-      )
+      .where(and(eq(schedulerBookings.id, id), open))
       .for("update");
     if (!booking) return undefined;
-    const placement = await place(tx, resource, booking.serviceId, startsAt, now, id);
+    const placement = await place(tx, resource, booking.serviceId, startsAt, now, [id]);
     if (!placement) return undefined;
     const [moved] = await tx
       .update(schedulerBookings)
@@ -407,6 +404,165 @@ export const moveBooking = (
       .where(eq(schedulerBookings.id, id))
       .returning();
     return moved;
+  });
+
+// What a series booking or move did: every booking, or none and the local dates that were not
+// free. A series is all or nothing, so staff pick another time instead of tracking gaps.
+export type SeriesResult = {
+  readonly booked: readonly Booking[];
+  readonly unfree: readonly string[];
+};
+
+// Places each start on `resource`, which the caller has locked. A series is a week or more apart
+// and a booking with its buffer is at most two days, so its bookings never clash with each other.
+const placeAll = async (
+  tx: Tx,
+  resource: Resource,
+  serviceId: number,
+  starts: readonly Date[],
+  now: Date,
+  ignore: readonly number[] = []
+) => {
+  const placements: (Placement | undefined)[] = [];
+  for (const startsAt of starts) {
+    placements.push(await place(tx, resource, serviceId, startsAt, now, ignore));
+  }
+  const unfree = starts.flatMap((startsAt, index) =>
+    placements[index] ? [] : [localDate(startsAt, resource.timeZone)]
+  );
+  // When nothing is unfree there is one placement per start, in order.
+  return { placements: placements.flatMap((placement) => placement ?? []), unfree };
+};
+
+// The same slot every `everyWeeks` weeks at the same wall-clock time, so 09:00 stays 09:00 across
+// daylight-saving changes. Each booking is its own row, checked like a single booking under one
+// lock of the resource; if any date is not free, nothing is booked.
+export const createSeries = (
+  db: Db,
+  { customerId, resourceId, serviceId, startsAt, everyWeeks, count, until }: Readonly<NewSeries>,
+  now = new Date()
+): Promise<SeriesResult | undefined> =>
+  db.transaction(async (tx) => {
+    const resource = await lockResource(tx, resourceId);
+    if (!resource || !(await findService(tx, serviceId))) return undefined;
+    const date = localDate(startsAt, resource.timeZone);
+    const time = localTime(startsAt, resource.timeZone);
+    const dates = [date];
+    for (
+      let next = addDays(date, 7 * everyWeeks);
+      count === undefined ? next <= (until ?? date) : dates.length < count;
+      next = addDays(next, 7 * everyWeeks)
+    ) {
+      dates.push(next);
+    }
+    // The first start is the one asked for, so the second 01:30 on a fall-back day stays itself.
+    const starts = dates.map((day, index) =>
+      index === 0 ? startsAt : instantOf(day, time, resource.timeZone)
+    );
+    const { placements, unfree } = await placeAll(tx, resource, serviceId, starts, now);
+    if (unfree.length > 0) return { booked: [], unfree };
+    const seriesId = randomUUID();
+    const booked = await tx
+      .insert(schedulerBookings)
+      .values(
+        starts.map((start, index) => ({
+          resourceId,
+          serviceId,
+          customerId,
+          seriesId,
+          startsAt: start,
+          ...placements[index],
+        }))
+      )
+      .returning();
+    return {
+      booked: booked.sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime()),
+      unfree,
+    };
+  });
+
+// An open booking and the open bookings after it in its series (just the booking when it has no
+// series), locked, earliest first, each with its resource's zone.
+const withLater = async (tx: Tx, id: number) => {
+  const [first] = await tx
+    .select({ booking: schedulerBookings, timeZone: schedulerResources.timeZone })
+    .from(schedulerBookings)
+    .innerJoin(schedulerResources, eq(schedulerBookings.resourceId, schedulerResources.id))
+    .where(and(eq(schedulerBookings.id, id), open))
+    .for("update", { of: schedulerBookings });
+  if (!first?.booking.seriesId) return first ? [first] : [];
+  return tx
+    .select({ booking: schedulerBookings, timeZone: schedulerResources.timeZone })
+    .from(schedulerBookings)
+    .innerJoin(schedulerResources, eq(schedulerBookings.resourceId, schedulerResources.id))
+    .where(
+      and(
+        eq(schedulerBookings.seriesId, first.booking.seriesId),
+        gte(schedulerBookings.startsAt, first.booking.startsAt),
+        open
+      )
+    )
+    .orderBy(asc(schedulerBookings.startsAt))
+    .for("update", { of: schedulerBookings });
+};
+
+// Moves a booking and the open ones after it in its series by the same number of days, to the
+// new wall-clock time on the target resource. All move, or none.
+// ponytail: the moved bookings are checked against everything but each other, which holds while
+// they stay a week apart. One moved alone to within two days of another could land overlapping it;
+// place and update them one at a time, ignoring only those not yet moved, if that ever matters.
+export const moveSeries = (
+  db: Db,
+  { id, resourceId, startsAt }: Readonly<MoveBooking>,
+  now = new Date()
+): Promise<SeriesResult | undefined> =>
+  db.transaction(async (tx) => {
+    const resource = await lockResource(tx, resourceId);
+    if (!resource) return undefined;
+    const rows = await withLater(tx, id);
+    if (rows.length === 0) return undefined;
+    const from = localDate(rows[0].booking.startsAt, rows[0].timeZone);
+    const shift =
+      (Date.parse(localDate(startsAt, resource.timeZone)) - Date.parse(from)) / 86_400_000;
+    const time = localTime(startsAt, resource.timeZone);
+    const starts = rows.map(({ booking, timeZone }, index) =>
+      index === 0
+        ? startsAt
+        : instantOf(addDays(localDate(booking.startsAt, timeZone), shift), time, resource.timeZone)
+    );
+    const ids = rows.map(({ booking }) => booking.id);
+    const { placements, unfree } = await placeAll(
+      tx,
+      resource,
+      rows[0].booking.serviceId,
+      starts,
+      now,
+      ids
+    );
+    if (unfree.length > 0) return { booked: [], unfree };
+    const booked: Booking[] = [];
+    for (const [index, bookingId] of ids.entries()) {
+      const [moved] = await tx
+        .update(schedulerBookings)
+        .set({ resourceId, startsAt: starts[index], ...placements[index] })
+        .where(eq(schedulerBookings.id, bookingId))
+        .returning();
+      booked.push(moved);
+    }
+    return { booked, unfree };
+  });
+
+// Cancels an open booking and the open ones after it in its series.
+export const cancelSeries = (db: Db, id: number): Promise<readonly Booking[] | undefined> =>
+  db.transaction(async (tx) => {
+    const ids = (await withLater(tx, id)).map(({ booking }) => booking.id);
+    if (ids.length === 0) return undefined;
+    const cancelled = await tx
+      .update(schedulerBookings)
+      .set({ status: "cancelled" })
+      .where(inArray(schedulerBookings.id, ids))
+      .returning();
+    return cancelled.sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
   });
 
 // Any status change except bringing a cancelled booking back, whose slot may be gone.
@@ -472,7 +628,27 @@ export const getBooking = async (db: Db, id: number) => {
     .innerJoin(schedulerServices, eq(schedulerBookings.serviceId, schedulerServices.id))
     .innerJoin(customers, eq(schedulerBookings.customerId, customers.id))
     .where(eq(schedulerBookings.id, id));
-  return (
-    row && { ...row.booking, resource: row.resource, service: row.service, customer: row.customer }
-  );
+  if (!row) return undefined;
+  // Every booking in the series, this one included, so staff see the series from any of them.
+  const series = row.booking.seriesId
+    ? await db
+        .select({
+          id: schedulerBookings.id,
+          startsAt: schedulerBookings.startsAt,
+          endsAt: schedulerBookings.endsAt,
+          status: schedulerBookings.status,
+          timeZone: schedulerResources.timeZone,
+        })
+        .from(schedulerBookings)
+        .innerJoin(schedulerResources, eq(schedulerBookings.resourceId, schedulerResources.id))
+        .where(eq(schedulerBookings.seriesId, row.booking.seriesId))
+        .orderBy(asc(schedulerBookings.startsAt))
+    : [];
+  return {
+    ...row.booking,
+    resource: row.resource,
+    service: row.service,
+    customer: row.customer,
+    series,
+  };
 };

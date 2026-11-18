@@ -49,6 +49,10 @@ export const instantOf = (date: string, time: string, timeZone: string): Date =>
 export const localDate = (instant: Date, timeZone: string): string =>
   new Date(wallClock(instant.getTime(), timeZone)).toISOString().slice(0, 10);
 
+// The wall-clock time ("HH:MM:SS") an instant shows in `timeZone`.
+export const localTime = (instant: Date, timeZone: string): string =>
+  new Date(wallClock(instant.getTime(), timeZone)).toISOString().slice(11, 19);
+
 export const addDays = (date: string, days: number): string =>
   new Date(Date.parse(date) + days * 24 * hour).toISOString().slice(0, 10);
 
