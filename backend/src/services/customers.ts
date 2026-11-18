@@ -7,15 +7,20 @@ import {
   type NewCustomer,
 } from "../db/schema/customers.ts";
 
+type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
+
 export const listCustomers = (db: Db): Promise<readonly Customer[]> =>
   db.select().from(customers).orderBy(asc(customers.name), asc(customers.id));
 
-export const getCustomer = async (db: Db, id: number): Promise<Customer | undefined> => {
+export const getCustomer = async (db: Db | Tx, id: number): Promise<Customer | undefined> => {
   const [customer] = await db.select().from(customers).where(eq(customers.id, id));
   return customer;
 };
 
-export const createCustomer = async (db: Db, input: Readonly<NewCustomer>): Promise<Customer> => {
+export const createCustomer = async (
+  db: Db | Tx,
+  input: Readonly<NewCustomer>
+): Promise<Customer> => {
   const [customer] = await db.insert(customers).values(input).returning();
   return customer;
 };

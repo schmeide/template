@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
+import { Slots } from "../App.tsx";
 import { useTRPC } from "../trpc.ts";
 import { AnswerFields, readAnswers } from "./AnswerFields.tsx";
 import {
@@ -81,6 +82,7 @@ export function RequestDetail({ id, actor }: { readonly id: number; readonly act
       <p>
         Status: <strong>{statusLabels[detail.status]}</strong>
       </p>
+      <Slots name="request" id={id} />
 
       {roles.edit ? (
         <form

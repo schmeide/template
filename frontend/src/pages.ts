@@ -14,6 +14,8 @@ import { Quotes } from "./invoices/Quotes.tsx";
 import { Notes } from "./notes/Notes.tsx";
 import { Orders } from "./orders/Orders.tsx";
 import { Shop } from "./orders/Shop.tsx";
+import { RequestDeal } from "./requestDeals/RequestDeal.tsx";
+import { DealSource } from "./requestDeals/RequestDeal.tsx";
 import { Requests } from "./requests/Requests.tsx";
 import { Stock } from "./stock/Stock.tsx";
 import { DealVisits } from "./visits/Visits.tsx";
@@ -44,4 +46,6 @@ export const slots: readonly Slot[] = [
   { slot: "deal", Component: DealDocuments },
   { slot: "quote", Component: QuoteConversion },
   { slot: "invoice", Component: InvoiceSource },
+  { slot: "request", Component: RequestDeal },
+  { slot: "deal", Component: DealSource },
 ];

@@ -11,6 +11,7 @@ import { quotesRouter } from "./routers/invoices.ts";
 import { notesRouter } from "./routers/notes.ts";
 import { ordersRouter } from "./routers/orders.ts";
 import { peopleRouter } from "./routers/people.ts";
+import { requestDealsRouter } from "./routers/requestDeals.ts";
 import { requestsRouter } from "./routers/requests.ts";
 import { stockRouter } from "./routers/stock.ts";
 import { visitsRouter } from "./routers/visits.ts";
@@ -32,6 +33,7 @@ export const appRouter = router({
   orders: ordersRouter,
   people: peopleRouter,
   conversions: conversionsRouter,
+  requestDeals: requestDealsRouter,
   requests: requestsRouter,
   stock: stockRouter,
 });

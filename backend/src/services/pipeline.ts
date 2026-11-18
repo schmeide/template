@@ -95,20 +95,23 @@ export const moveStage = (db: Db, id: number, position: number): Promise<Stage |
   });
 
 // Appends to the stage. Locking the stage row queues concurrent creates for the next position.
+// Takes a transaction the caller holds, for a link that writes more with it.
+export const insertItem = async (tx: Tx, input: Readonly<NewItem>): Promise<Item | undefined> => {
+  const [stage] = await tx
+    .select({ id: pipelineStages.id })
+    .from(pipelineStages)
+    .where(eq(pipelineStages.id, input.stageId))
+    .for("update");
+  if (!stage) return undefined;
+  const [item] = await tx
+    .insert(pipelineItems)
+    .values({ ...input, position: await itemsIn(tx, stage.id) })
+    .returning();
+  return item;
+};
+
 export const createItem = (db: Db, input: Readonly<NewItem>): Promise<Item | undefined> =>
-  db.transaction(async (tx) => {
-    const [stage] = await tx
-      .select({ id: pipelineStages.id })
-      .from(pipelineStages)
-      .where(eq(pipelineStages.id, input.stageId))
-      .for("update");
-    if (!stage) return undefined;
-    const [item] = await tx
-      .insert(pipelineItems)
-      .values({ ...input, position: await itemsIn(tx, stage.id) })
-      .returning();
-    return item;
-  });
+  db.transaction((tx) => insertItem(tx, input));
 
 // Changes an item's fields. Its stage and position change only through `moveItem`.
 export const updateItem = async (
@@ -198,7 +201,10 @@ export const moveItem = async (db: Db, move: Readonly<Move>): Promise<Item | und
   return result === "moved meanwhile" ? moveItem(db, move) : result;
 };
 
-export const addNote = async (db: Db, input: Readonly<NewNote>): Promise<Activity | undefined> => {
+export const addNote = async (
+  db: Db | Tx,
+  input: Readonly<NewNote>
+): Promise<Activity | undefined> => {
   const [item] = await db
     .select({ id: pipelineItems.id })
     .from(pipelineItems)
