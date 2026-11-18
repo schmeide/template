@@ -85,6 +85,13 @@
       "when": 1795028322768,
       "tag": "0011_create_deal_documents",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1795030410893,
+      "tag": "0012_create_deal_bookings",
+      "breakpoints": true
     }
   ]
 }

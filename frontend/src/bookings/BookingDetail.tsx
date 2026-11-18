@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { FormEvent } from "react";
+import { Slots } from "../App.tsx";
 import { useTRPC } from "../trpc.ts";
 import { focusOnMount, formatDay, formatTime, localDate, statuses } from "./format.ts";
 import { readSlot, SlotPicker } from "./SlotPicker.tsx";
@@ -39,6 +40,7 @@ export function BookingDetail({ id }: { readonly id: number }) {
           <h1 ref={focusOnMount} tabIndex={-1}>
             {data.service.name} for {data.customer.name}
           </h1>
+          <Slots name="booking" id={id} />
           <dl className="booking-facts">
             <div>
               <dt>When</dt>

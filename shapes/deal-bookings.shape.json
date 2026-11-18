@@ -1,0 +1,18 @@
+{
+  "requires": ["deals", "bookings"],
+  "files": [
+    "backend/src/db/schema/visits.ts",
+    "backend/src/services/visits.ts",
+    "backend/src/services/__tests__/visits.test.ts",
+    "backend/src/routers/visits.ts",
+    "backend/src/routers/__tests__/visits.test.ts",
+    "frontend/src/visits/",
+    "docs/shapes/deal-bookings.md"
+  ],
+  "routers": [{ "key": "visits", "name": "visitsRouter", "from": "./routers/visits.ts" }],
+  "pages": [],
+  "slots": [
+    { "slot": "deal", "name": "DealVisits", "from": "./visits/Visits.tsx" },
+    { "slot": "booking", "name": "BookingDeal", "from": "./visits/Visits.tsx" }
+  ]
+}

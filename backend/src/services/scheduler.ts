@@ -314,7 +314,7 @@ const place = async (
 };
 
 const insertBooking = (
-  db: Db,
+  db: Db | Tx,
   { resourceId, serviceId, startsAt }: Readonly<Omit<NewBooking, "customerId">>,
   customerFor: (tx: Tx) => Promise<number>,
   now: Date
@@ -333,8 +333,9 @@ const insertBooking = (
 
 // ponytail: one booking at a time; recurring bookings (the same slot every week) are a follow-up.
 // ponytail: no reminders before a booking; sending them needs email and a job runner, a follow-up.
+// Takes a transaction too, so a caller can write its own rows with the booking, atomically.
 export const createBooking = async (
-  db: Db,
+  db: Db | Tx,
   { customerId, ...slot }: Readonly<NewBooking>,
   now = new Date()
 ): Promise<Booking | undefined> =>

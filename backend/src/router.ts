@@ -13,6 +13,7 @@ import { ordersRouter } from "./routers/orders.ts";
 import { peopleRouter } from "./routers/people.ts";
 import { requestsRouter } from "./routers/requests.ts";
 import { stockRouter } from "./routers/stock.ts";
+import { visitsRouter } from "./routers/visits.ts";
 import { router } from "./trpc.ts";
 
 // One sub-router per feature.
@@ -21,6 +22,7 @@ export const appRouter = router({
   bookings: bookingsRouter,
   customers: customersRouter,
   dashboard: dashboardRouter,
+  visits: visitsRouter,
   dealDocuments: dealDocumentsRouter,
   deals: dealsRouter,
   handbook: handbookRouter,
