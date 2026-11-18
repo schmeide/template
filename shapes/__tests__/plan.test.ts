@@ -7,6 +7,7 @@ import {
   recipeShapes,
   renderPages,
   renderRouter,
+  renderRoutes,
   resolve,
   selectable,
   type Recipes,
@@ -114,6 +115,13 @@ describe("problems", () => {
       "page path notes is claimed more than once",
     ]);
   });
+
+  it("reports routes claimed twice", () => {
+    const routes = [{ name: "filesRoutes", from: "./routes/files.ts" }];
+    const broken: Shapes = { a: { ...shape("a"), routes }, b: { ...shape("b"), routes } };
+
+    expect(problems(broken)).toEqual(["routes filesRoutes is claimed more than once"]);
+  });
 });
 
 describe("renderRouter", () => {
@@ -131,6 +139,30 @@ export const appRouter = router({
 
 export type AppRouter = typeof appRouter;
 `);
+  });
+});
+
+describe("renderRoutes", () => {
+  it("lists the routes of kept shapes, and none when no shape has any", () => {
+    const withRoutes: Shapes = {
+      ...shapes,
+      invoices: { ...shapes.invoices, routes: [{ name: "pdfRoutes", from: "./routes/pdf.ts" }] },
+    };
+
+    expect(renderRoutes(withRoutes, ["invoices", "customers"]))
+      .toBe(`import type { Db } from "./db/client.ts";
+import { pdfRoutes } from "./routes/pdf.ts";
+import type { FastifyPluginAsync } from "fastify";
+
+// One Fastify plugin per feature that serves plain HTTP, registered under /api. Everything else
+// goes through the tRPC router.
+export const routes: readonly FastifyPluginAsync<{ readonly db: Db }>[] = [
+  pdfRoutes,
+];
+`);
+    expect(renderRoutes(withRoutes, ["customers"])).toContain(
+      "export const routes: readonly FastifyPluginAsync<{ readonly db: Db }>[] = [\n\n];"
+    );
   });
 });
 

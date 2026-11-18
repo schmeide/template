@@ -10,6 +10,7 @@ import {
   recipeShapes,
   renderPages,
   renderRouter,
+  renderRoutes,
   resolve,
   selectable,
   type Recipe,
@@ -57,6 +58,7 @@ if (found.length > 0) fail(found);
 
 const writeRegistries = (kept: readonly string[]) => {
   writeFileSync(at("backend/src/router.ts"), renderRouter(shapes, kept));
+  writeFileSync(at("backend/src/routes.ts"), renderRoutes(shapes, kept));
   writeFileSync(at("frontend/src/pages.ts"), renderPages(shapes, kept));
 };
 

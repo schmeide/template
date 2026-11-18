@@ -38,8 +38,8 @@ document expiry tracker are the same shape with different names and fields.
   - Status is one of in use, in storage, in repair or lost, in any case; empty means in use. Dates are
     `YYYY-MM-DD`.
   - Importing checks the file again on the server rather than trusting the preview.
-  - A file holds at most 5,000 rows and 300,000 characters. The request carries the file's text, and Fastify and
-    nginx both cap a request at 1 MiB; 300,000 characters fit even at 3 bytes each. Split a bigger file.
+  - A file holds at most 5,000 rows and 300,000 characters. The request carries the file's text, and Fastify caps a
+    tRPC request at 1 MiB; 300,000 characters fit even at 3 bytes each. Split a bigger file.
 - **Export** writes the same columns as import, in the list's order, for the whole filter (no paging), so an
   exported file imports again. Statuses are written as stored (`in_use`). Text the CSV writer defuses with a leading
   apostrophe (a name starting with `-`, say) comes back with the apostrophe.

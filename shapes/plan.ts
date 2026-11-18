@@ -1,5 +1,5 @@
 // Pure planning for `shape.ts`: which shapes stay, which files go, and what the
-// two registries (backend router, frontend pages) look like afterwards.
+// three registries (backend router, backend routes, frontend pages) look like afterwards.
 
 export type Shape = {
   readonly requires: readonly string[];
@@ -22,6 +22,8 @@ export type Shape = {
     readonly name: string;
     readonly from: string;
   }[];
+  // Fastify plugins for plain HTTP routes (file upload and download). Omitted when there are none.
+  readonly routes?: readonly { readonly name: string; readonly from: string }[];
 };
 
 export type Shapes = Readonly<Record<string, Shape>>;
@@ -53,6 +55,10 @@ export const problems = (shapes: Shapes): readonly string[] => {
     ...clashes(
       "page path",
       all.flatMap((shape) => shape.pages.map((page) => page.path))
+    ),
+    ...clashes(
+      "routes",
+      all.flatMap((shape) => (shape.routes ?? []).map((routes) => routes.name))
     ),
   ];
 };
@@ -161,6 +167,22 @@ ${routers.map(({ key, name }) => `  ${key}: ${name},`).join("\n")}
 });
 
 export type AppRouter = typeof appRouter;
+`;
+};
+
+export const renderRoutes = (shapes: Shapes, kept: readonly string[]): string => {
+  const routes = kept.flatMap((name) => shapes[name].routes ?? []);
+  return `${importLines([
+    ...routes,
+    { name: "Db", from: "./db/client.ts", typeOnly: true },
+    { name: "FastifyPluginAsync", from: "fastify", typeOnly: true },
+  ])}
+
+// One Fastify plugin per feature that serves plain HTTP, registered under /api. Everything else
+// goes through the tRPC router.
+export const routes: readonly FastifyPluginAsync<{ readonly db: Db }>[] = [
+${routes.map(({ name }) => `  ${name},`).join("\n")}
+];
 `;
 };
 

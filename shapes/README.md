@@ -13,9 +13,10 @@ about working on the template itself.
   `backend/src/` and `frontend/src/` like any feature. The template is one app with every shape in it, so `make serve`,
   `make test`, and `make check` cover all of them together.
 - **A manifest names what a shape owns.** `shapes/<name>.shape.json` lists its files, its sub-routers, its pages, its
-  slot views, and the shapes it requires.
+  slot views, any plain HTTP routes, and the shapes it requires.
 - **A project is made by pruning.** `make shape/keep NAMES="invoices portal"` keeps those shapes and what they require,
-  deletes every other shape's files, rewrites the two registries (`backend/src/router.ts` and `frontend/src/pages.ts`),
+  deletes every other shape's files, rewrites the three registries (`backend/src/router.ts`, `backend/src/routes.ts`
+  and `frontend/src/pages.ts`),
   replaces the migrations with one `0000_init` for the tables that are left, and deletes `shapes/`. What remains is an
   ordinary project with no trace of the mechanism.
 - **A recipe names the shapes for a trade.** `shapes/<name>.recipe.json` lists the shapes a trade-specific app keeps,
@@ -102,7 +103,29 @@ does not run one alone; it is checked with every shape that requires it. (A link
 requires does, so it is listed and checked alone.) `csv` (owned by `stock` until `assets` also
 needed it) is the first; `money` (from `invoices`) and `ratelimit` (from `requests`) moved out when `orders` needed
 them, and `people` (the "acting as" names, from `requests`) when `handbook` did. A building block may have tables
-and a router, as `people` does; it still has no page.
+and a router, as `people` does; it still has no page. `files` (file upload) was built as a building block from the
+start, for registry attachments (schmeide/template#34), because the portal and catalog images are known to need it
+next.
+
+### Routes outside tRPC
+
+A file upload is a raw request body and a download is raw bytes with its own headers; neither fits tRPC, whose
+requests are JSON and capped at 1 MiB. So a shape may own a Fastify plugin, listed under `routes` in its manifest:
+
+```json
+"routes": [{ "name": "assetsRoutes", "from": "./routes/assets.ts" }]
+```
+
+`make shape/registries` writes every kept shape's plugins into a third registry, `backend/src/routes.ts`, and
+`backend/src/app.ts` registers each one under `/api`, passing `db`. A shape's plugin is its own file, so the rule
+above holds: the shape adds one line to a generated registry and nothing to shared code. Fastify keeps a plugin's
+content type parsers, body limit and error handler inside it, so a plugin that takes files leaves JSON and tRPC as
+they were. `routes` is optional, and a project with no such shape gets an empty list.
+
+Other ways were weighed. Sending files through tRPC as base64 needs no new registry, but it raises the body limit of
+every tRPC call, inflates each file by a third, and a download then has to be rebuilt in the browser instead of
+being a plain link. Letting a router file register Fastify routes would hide HTTP routes in a tRPC file. A route
+plugin should stay rare: anything that is a call with JSON in and out belongs in the shape's router.
 
 ### How a shape becomes a named app
 
@@ -174,9 +197,10 @@ approval ships with a plain "acting as" choice marked `ponytail:`.
    ```
 
    `files` takes files or directories (end a directory with `/`) and must cover everything the shape owns, tests and
-   its doc included. `from` is relative to the registry: `backend/src/` for routers, `frontend/src/` for pages and
-   slots. A link shape adds `"slots": [{ "slot": "quote", "name": "QuoteConversion", "from": "./..." }]` (see
-   [How a link's view reaches pages it does not own](#how-a-links-view-reaches-pages-it-does-not-own-slots)).
+   its doc included. `from` is relative to the registry: `backend/src/` for routers and routes, `frontend/src/` for
+   pages and slots. A link shape adds `"slots": [{ "slot": "quote", "name": "QuoteConversion", "from": "./..." }]` (see
+   [How a link's view reaches pages it does not own](#how-a-links-view-reaches-pages-it-does-not-own-slots)). Add
+   `routes` only for a plain HTTP route (see "Routes outside tRPC").
 
 3. Run `make shape/registries`, then `make db/generate NAME=create_<name>`.
 4. Write `docs/shapes/<name>.md`.

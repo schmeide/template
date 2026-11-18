@@ -104,9 +104,9 @@ export const pageSchema = filterSchema.extend({
   pageSize: z.number().int().min(1).max(100).optional(),
 });
 
-// ponytail: the request carries the whole file, so it must fit the 1 MiB body limit of Fastify
-// and nginx (a character is at most 3 bytes in UTF-8). Upload the file instead of its text once
-// the shared file upload building block exists.
+// ponytail: the request carries the whole file, so it must fit Fastify's 1 MiB body limit for
+// tRPC (a character is at most 3 bytes in UTF-8). Upload the file instead of its text, through
+// the `files` building block, to raise it.
 export const importLimits = { characters: 300_000, rows: 5_000 } as const;
 
 export const importSchema = z.object({ csv: z.string().max(importLimits.characters) });

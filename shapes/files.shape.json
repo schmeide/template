@@ -1,0 +1,14 @@
+{
+  "requires": [],
+  "files": [
+    "backend/src/db/schema/files.ts",
+    "backend/src/services/files.ts",
+    "backend/src/services/__tests__/files.test.ts",
+    "backend/src/routes/files.ts",
+    "backend/src/routes/__tests__/files.test.ts",
+    "frontend/src/files/",
+    "docs/shapes/files.md"
+  ],
+  "routers": [],
+  "pages": []
+}

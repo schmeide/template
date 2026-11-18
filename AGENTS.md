@@ -103,6 +103,9 @@ UI, follow `.claude/skills/interface-review/SKILL.md`.
   `router` and `procedure` from `backend/src/trpc.ts`.
 - `backend/src/router.ts`: the app router. One line per feature
   (`notes: notesRouter`) and nothing else.
+- `backend/src/routes/<feature>.ts` and `backend/src/routes.ts`: a Fastify
+  plugin for the few routes tRPC cannot serve (a file upload or download), and
+  the list of those plugins, one line per feature. Everything else is tRPC.
 - `backend/src/app.ts`: Fastify wiring, including `/healthz` and
   `/api/healthz`. `server.ts` (the entry point) and `migrate.ts` are the only
   places that read environment variables.
@@ -118,9 +121,9 @@ UI, follow `.claude/skills/interface-review/SKILL.md`.
   menu when there is more than one page. No feature content.
 - `frontend/src/main.tsx`: providers and the tRPC client. No page content.
 - Keep a feature inside its own files. Another feature may import from it, but
-  the only shared files a feature touches are `router.ts` and `pages.ts`. A
-  feature that links two others (a quote becomes an invoice) shows its view on
-  their pages through a slot, not by editing them.
+  the only shared files a feature touches are `router.ts`, `routes.ts` and
+  `pages.ts`. A feature that links two others (a quote becomes an invoice)
+  shows its view on their pages through a slot, not by editing them.
 - Tests live in `__tests__/` beside the code: `<name>.test.ts` or `.test.tsx`.
 
 ## API and service split

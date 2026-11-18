@@ -25,6 +25,7 @@ Run `make` to see every target.
 | `backend/src/services/`   | Business logic, one file per feature, tested against Postgres       |
 | `backend/src/routers/`    | One tRPC sub-router per feature: validates input, calls services    |
 | `backend/src/router.ts`   | One line per sub-router; exports `AppRouter`                        |
+| `backend/src/routes.ts`   | Fastify plugins for plain HTTP routes (file upload and download)    |
 | `backend/src/app.ts`      | Fastify app: `/healthz`, `/api/healthz`, tRPC under `/api/trpc`     |
 | `backend/src/server.ts`   | Entry point: reads `DATABASE_URL` and `PORT`, listens               |
 | `backend/src/migrate.ts`  | Applies `backend/drizzle` to `DATABASE_URL` (host and Compose)      |
@@ -61,7 +62,7 @@ make shape/list     # list the shapes (these five exist only in the template)
 make shape/recipes  # list the recipes for trade-specific apps (docs/recipes/)
 make shape/keep     # make this copy a project with only NAMES="a b" or a RECIPE=name
 make shape/check    # prove each shape alone and each recipe passes check, test, and build
-make shape/registries  # rewrite router.ts and pages.ts from the manifests
+make shape/registries  # rewrite router.ts, routes.ts and pages.ts from the manifests
 ```
 
 ## Local development

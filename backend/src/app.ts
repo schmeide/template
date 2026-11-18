@@ -2,6 +2,7 @@ import { fastifyTRPCPlugin } from "@trpc/server/adapters/fastify";
 import Fastify, { type FastifyRequest } from "fastify";
 import type { Db } from "./db/client.ts";
 import { appRouter } from "./router.ts";
+import { routes } from "./routes.ts";
 
 export const buildApp = (db: Db, logger = false) => {
   const app = Fastify({ logger });
@@ -23,5 +24,7 @@ export const buildApp = (db: Db, logger = false) => {
       }),
     },
   });
+  // The few features that serve plain HTTP (file upload and download), each in its own plugin.
+  for (const plugin of routes) app.register(plugin, { prefix: "/api", db });
   return app;
 };
