@@ -1,0 +1,93 @@
+.booking-views ul,
+.booking-rows,
+.booking-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.booking-rows,
+.booking-list {
+  flex-direction: column;
+}
+
+.booking-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.booking-actions :is(h2, h3, p) {
+  flex-basis: 100%;
+  margin-block: 0;
+}
+
+.booking-form {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+}
+
+.booking-mode,
+.booking-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 0;
+  border: 1px solid #c8c8c8;
+  border-radius: 6px;
+}
+
+.booking-slots label {
+  font-variant-numeric: tabular-nums;
+}
+
+.booking-week {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 16px;
+}
+
+.booking-day h2 {
+  margin-block: 16px 4px;
+  font-size: 1.125rem;
+}
+
+.booking-list a {
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.booking-list p {
+  margin-block: 2px 0;
+}
+
+.booking-muted {
+  color: #555;
+}
+
+.booking-cancelled a {
+  text-decoration-line: line-through;
+}
+
+.booking-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+}
+
+.booking-facts div {
+  display: contents;
+}
+
+.booking-facts dt {
+  color: #555;
+}
+
+.booking-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}

@@ -1,0 +1,29 @@
+{
+  "requires": ["customers"],
+  "files": [
+    "backend/src/db/schema/scheduler.ts",
+    "backend/src/services/scheduler.ts",
+    "backend/src/services/zonedTime.ts",
+    "backend/src/services/__tests__/scheduler.test.ts",
+    "backend/src/services/__tests__/zonedTime.test.ts",
+    "backend/src/routers/bookings.ts",
+    "backend/src/routers/__tests__/bookings.test.ts",
+    "frontend/src/bookings/",
+    "docs/shapes/bookings.md"
+  ],
+  "routers": [{ "key": "bookings", "name": "bookingsRouter", "from": "./routers/bookings.ts" }],
+  "pages": [
+    {
+      "path": "bookings",
+      "title": "Bookings",
+      "name": "Bookings",
+      "from": "./bookings/Bookings.tsx"
+    },
+    {
+      "path": "book",
+      "title": "Book online",
+      "name": "BookOnline",
+      "from": "./bookings/BookOnline.tsx"
+    }
+  ]
+}
