@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { inferRouterOutputs } from "@trpc/server";
 import type { FormEvent } from "react";
 import type { AppRouter } from "../../../backend/src/router.ts";
-import { useHashPath } from "../App.tsx";
+import { Slots, useHashPath } from "../App.tsx";
 import { useTRPC } from "../trpc.ts";
 
 type Customer = inferRouterOutputs<AppRouter>["customers"]["get"];
@@ -152,6 +152,7 @@ function CustomerDetail({ id }: { readonly id: number }) {
         </form>
       )}
       <p role="status">{update.isSuccess ? "Saved" : ""}</p>
+      <Slots name="customer" id={id} />
     </main>
   );
 }

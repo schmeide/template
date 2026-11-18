@@ -70,7 +70,11 @@ const answerSchema = (field: Field, complete: boolean) => {
 
 // Checks answers against the fields on the server and keeps only the ones the fields ask for.
 // `complete` also requires every required field, as submitting does; a draft may be partial.
-const parseAnswers = (fields: readonly Field[], answers: unknown, complete: boolean): Answers => {
+export const parseAnswers = (
+  fields: readonly Field[],
+  answers: unknown,
+  complete: boolean
+): Answers => {
   const schema = z.object(
     Object.fromEntries(fields.map((field) => [field.label, answerSchema(field, complete)]))
   );

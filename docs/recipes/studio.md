@@ -5,7 +5,8 @@ records and intake forms. Made with `make shape/keep RECIPE=studio` (`shapes/stu
 
 ## Shapes and the app each becomes
 
-The menu follows this order: Bookings (the home page), Book online, Customers and Requests, renamed as below.
+The menu follows this order: Bookings (the home page), Book online, Customers, Requests and Intake forms, renamed as
+below.
 
 - **Calendar and Book online**, from [bookings](../shapes/bookings.md), which ships as exactly this. A resource is a
   stylist, a therapist or a room; a service is a treatment with its length and its clean-up time as the buffer. A
@@ -23,13 +24,14 @@ The menu follows this order: Bookings (the home page), Book online, Customers an
 
 ## Links between them
 
-Not built yet. It is a shape of its own that requires both sides, and it has an issue. Until it exists, the public
-form is answered without a client attached, and staff match it to the client by the contact it gives.
+The link is a shape of its own that requires both sides, and this recipe keeps it. The public form still works for
+people who are not clients yet; staff match it to a client by the contact it gives.
 
-- **Intake form for a client** (`requests` and `customers`, schmeide/template#44): from a client's record, staff send
-  a one-time link to a form; the answers are filed as a submitted request linked to that client and listed on the
-  record. A link is used once, enforced by locking its row as the request is filed. The form shows nothing about the
-  client, and has the public form's honeypot and rate limit.
+- **Intake form for a client**, built: [customer-intake](../shapes/customer-intake.md). "Send intake form" on a
+  client's record makes a one-time link to a form; the answers are filed as a submitted request linked to that client
+  and listed on the record. A link is used once, enforced by locking its row as the request is filed. The form shows
+  nothing about the client, and has the public form's honeypot and rate limit. Rename its wording with the clients, in
+  `frontend/src/intakes/`.
 
 ## Vocabulary and fields
 
@@ -43,7 +45,9 @@ form is answered without a client attached, and staff match it to the client by 
 
 Until platform sign-in exists (schmeide/schmeide.app#84), every staff view is open to anyone who finds the app's
 address. A clinic must not collect health details (conditions, medication, treatment notes) in forms or client
-fields before then. Everything else in this recipe can run now.
+fields before then. That includes intake forms: a one-time link keeps the client's name off the form, but the answers
+land in requests that every staff view shows, so ask only for contact preferences, how they heard of you and consent.
+Everything else in this recipe can run now.
 
 ## Not covered yet
 
