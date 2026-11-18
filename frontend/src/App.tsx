@@ -1,4 +1,10 @@
-import { createContext, useContext, useSyncExternalStore, type ComponentType } from "react";
+import {
+  createContext,
+  useContext,
+  useSyncExternalStore,
+  type ComponentType,
+  type ReactNode,
+} from "react";
 
 export type Page = {
   readonly path: string;
@@ -15,11 +21,21 @@ export type Slot = {
 
 const SlotsContext = createContext<readonly Slot[]>([]);
 
-// Renders every view added to the place `name`, or nothing when none is kept.
-export function Slots({ name, id }: { readonly name: string; readonly id: number }) {
-  return useContext(SlotsContext)
-    .filter(({ slot }) => slot === name)
-    .map(({ Component }, index) => <Component key={index} id={id} />);
+// Renders every view added to the place `name`. When none is kept it renders `fallback`, the
+// page's own control that a view replaces, or nothing.
+export function Slots({
+  name,
+  id,
+  fallback = null,
+}: {
+  readonly name: string;
+  readonly id: number;
+  readonly fallback?: ReactNode;
+}) {
+  const views = useContext(SlotsContext).filter(({ slot }) => slot === name);
+  return views.length === 0
+    ? fallback
+    : views.map(({ Component }, index) => <Component key={index} id={id} />);
 }
 
 // The address is `#/<path>`, so pages need no server routes and no router library.

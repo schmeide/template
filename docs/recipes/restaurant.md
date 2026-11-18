@@ -25,17 +25,18 @@ below. `customers` comes third, right after `bookings`, which requires it.
 
 ## Links between them
 
-Not built yet. It is a shape of its own that requires both sides, and it has an issue. Until it exists, ingredient use
-is found by counting: the weekly count records the difference as an adjustment.
+The link is a shape of its own that requires both sides, and the recipe keeps it. The weekly count still records the
+difference between the estimated and the counted balance as an adjustment.
 
-- **Order to stock** (`orders` and `stock`, schmeide/template#63): each dish maps to the stock items it uses and how
-  much of each per portion (grams of flour, one box), which is the dish recipe this needs. Fulfilling a `ready` order
-  (collected, in the menu statuses) goes through the link: in one transaction it locks the order and every item it
-  uses (in id order), writes one "out" entry per item with the order's reference, records the order as issued and
-  moves it on. An order is issued once, enforced by a unique order id and the lock. If any item would go below its
-  floor, nothing is written; turn on "Allow stock below zero" for ingredients, whose balances are estimates between
-  counts, so a short balance never holds up a collection. It covers takeaway and pre-orders only, since dine-in sales
-  are not recorded (see below).
+- **Order to stock**, from [order-stock](../shapes/order-stock.md): on each dish's page in Orders → Products, staff
+  list the stock items it uses and how much of each per portion (grams of flour, one box), which is the dish recipe
+  this needs. Fulfilling a `ready` order writes one "out" entry per item with the order's reference and moves the
+  order on, all at once, and only once. With the menu statuses, the step it moves to is `collected`: rename it in
+  `fulfillOrder` and in the order page's `order-fulfillment` slot as
+  [What usually varies](../shapes/order-stock.md#what-usually-varies) describes. If any item would go below its floor,
+  nothing is written; turn on "Allow stock below zero" for ingredients, whose balances are estimates between counts,
+  so a short balance never holds up a collection. It covers takeaway and pre-orders only, since dine-in sales are not
+  recorded (see below).
 
 ## Staff shifts and reservations
 

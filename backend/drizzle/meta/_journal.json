@@ -162,6 +162,13 @@
       "when": 1795050677856,
       "tag": "0022_create_leave_balance",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1795050778689,
+      "tag": "0023_create_order_stock",
+      "breakpoints": true
     }
   ]
 }

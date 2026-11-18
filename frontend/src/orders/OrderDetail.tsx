@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { Slots } from "../App.tsx";
 import { formatMoney } from "../money/money.ts";
 import { useTRPC } from "../trpc.ts";
-import { focusOnMount, formatDate, nextSteps, statusLabel } from "./format.ts";
+import { focusOnMount, formatDate, nextSteps, statusLabel, type OrderStatus } from "./format.ts";
 
 export function OrderDetail({ id }: { readonly id: number }) {
   const trpc = useTRPC();
@@ -15,6 +16,9 @@ export function OrderDetail({ id }: { readonly id: number }) {
       onSettled: () => queryClient.invalidateQueries({ queryKey: trpc.orders.pathKey() }),
     })
   );
+  // The status when the page opened, so a change made here or by a slot's view is announced.
+  const [openedAs, setOpenedAs] = useState<OrderStatus>();
+  if (openedAs === undefined && order.data) setOpenedAs(order.data.status);
 
   if (order.error?.data?.code === "NOT_FOUND") {
     return (
@@ -57,20 +61,28 @@ export function OrderDetail({ id }: { readonly id: number }) {
       </p>
       {nextSteps[status].length > 0 && !confirmingCancel && (
         <div className="order-actions">
-          {nextSteps[status].map((step) => (
-            <button
-              key={step.to}
-              type="button"
-              disabled={move.isPending}
-              onClick={() =>
-                step.to === "cancelled"
-                  ? setConfirmingCancel(true)
-                  : move.mutate({ id, to: step.to })
-              }
-            >
-              {step.label}
-            </button>
-          ))}
+          {nextSteps[status].map((step) => {
+            const button = (
+              <button
+                key={step.to}
+                type="button"
+                disabled={move.isPending}
+                onClick={() =>
+                  step.to === "cancelled"
+                    ? setConfirmingCancel(true)
+                    : move.mutate({ id, to: step.to })
+                }
+              >
+                {step.label}
+              </button>
+            );
+            // A link shape that fulfills the order (taking it out of stock, say) replaces the button.
+            return step.to === "fulfilled" ? (
+              <Slots key={step.to} name="order-fulfillment" id={id} fallback={button} />
+            ) : (
+              button
+            );
+          })}
         </div>
       )}
       {confirmingCancel && (
@@ -93,7 +105,9 @@ export function OrderDetail({ id }: { readonly id: number }) {
         </div>
       )}
       <p role="status" className="order-status-message">
-        {move.isSuccess ? `Order ${reference} is now ${statusLabel(status).toLowerCase()}.` : ""}
+        {openedAs !== undefined && status !== openedAs
+          ? `Order ${reference} is now ${statusLabel(status).toLowerCase()}.`
+          : ""}
       </p>
       {move.error && <p role="alert">Unable to change the status: {move.error.message}</p>}
 

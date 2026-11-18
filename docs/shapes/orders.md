@@ -17,6 +17,11 @@ donations are the same shape with different names, fields and statuses.
 - **Orders** (`catalog_orders`, `catalog_order_lines`): a list filtered by status, a detail view with the customer's
   details, and buttons for the allowed status changes.
 - **Money**: from the `money` shape, which this one requires. See [money.md](money.md).
+- **Slots**, where link shapes add their views (`<Slots>` from `frontend/src/App.tsx`); with no link kept they render
+  nothing or the page's own control:
+  - `product`, below the form on a product's edit page;
+  - `order-fulfillment`, in place of the "Mark fulfilled" button on a `ready` order, which it renders when no view
+    fills the slot.
 
 ## Rules
 
@@ -52,8 +57,10 @@ donations are the same shape with different names, fields and statuses.
   the detail view) or relabel it "Collection time".
 - The statuses: edit `orderStatus` in the schema, `transitions` in the service and `nextSteps` in
   `frontend/src/orders/format.ts`.
-- Whether stock is tracked. That is a link shape that requires this one and `stock`: on placing an order it records
-  an `out` entry per line in the ledger and refuses the order when that would take an item below its floor.
+- Whether stock is tracked. That is the [order-stock](order-stock.md) link shape, which requires this one and
+  `stock`. Each product names the stock items it uses, and "Mark fulfilled" on a `ready` order records an `out`
+  entry per item and refuses, writing nothing, when that would take an item below its floor. The shop does not
+  check or show stock.
 - Customers. Details live on the order so the shop needs no other shape. When `customers` is kept too, a link shape
   can add `customer_id` to `catalog_orders` and match or create the customer by email on checkout.
 

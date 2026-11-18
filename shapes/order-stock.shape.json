@@ -1,0 +1,24 @@
+{
+  "requires": ["orders", "stock"],
+  "files": [
+    "backend/src/db/schema/orderStock.ts",
+    "backend/src/services/orderStock.ts",
+    "backend/src/services/__tests__/orderStock.test.ts",
+    "backend/src/routers/orderStock.ts",
+    "backend/src/routers/__tests__/orderStock.test.ts",
+    "frontend/src/orderStock/",
+    "docs/shapes/order-stock.md"
+  ],
+  "routers": [
+    { "key": "orderStock", "name": "orderStockRouter", "from": "./routers/orderStock.ts" }
+  ],
+  "pages": [],
+  "slots": [
+    { "slot": "product", "name": "ProductStock", "from": "./orderStock/OrderStock.tsx" },
+    {
+      "slot": "order-fulfillment",
+      "name": "OrderFulfillment",
+      "from": "./orderStock/OrderStock.tsx"
+    }
+  ]
+}
