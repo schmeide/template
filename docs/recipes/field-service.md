@@ -27,7 +27,7 @@ The menu follows this order; `customers` comes second, right after the first sha
 
 ## Links between them
 
-Each link is a shape of its own that requires both sides. The first two are built and kept by this recipe; each of
+Each link is a shape of its own that requires both sides. The first three are built and kept by this recipe; each of
 the others has an issue, and until it exists staff carry the details across by hand.
 
 - **Quote to invoice**, built: [quote-invoice](../shapes/quote-invoice.md). "Make invoice" on an accepted quote makes
@@ -37,9 +37,10 @@ the others has an issue, and until it exists staff carry the details across by h
   on a job makes a draft for its customer and lists it on the job with its number, status and total. A document
   belongs to at most one job. A job with no customer gets none. Rename "deal" to "job" in its messages, as
   [its doc](../shapes/deal-documents.md#what-usually-varies) describes.
-- **Job to visits** (`deals` and `bookings`, schmeide/template#40): from a job, book one or more visits through the
-  bookings service, so the no-double-booking rules still hold. A booking belongs to at most one job; cancelling it
-  keeps the link and shows the visit as cancelled.
+- **Job to visits**, built: [deal-bookings](../shapes/deal-bookings.md). "Book a visit" on a job books a technician
+  or van for the job's customer through the bookings service, so the no-double-booking rules still hold. The job
+  lists its visits and each visit links back to the job. A booking belongs to at most one job; cancelling or moving
+  it keeps the link and the job shows the visit as it now stands.
 - **Callout request to job** (`requests` and `deals`, schmeide/template#41): an approved callout becomes a job in the
   first stage, once, with its answers in the job's first note. Staff pick or create the customer, since a public
   request carries only a free-text contact.

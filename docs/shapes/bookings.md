@@ -21,6 +21,8 @@ equipment and room rental, and reservations are the same shape with different na
 - **New booking** (`#/bookings/new`) and **booking page** (`#/bookings/<id>`): pick a service, a date and a free time;
   change the status, move to another free time or resource, or cancel. A cancelled booking frees its time and cannot
   be brought back.
+- **Slot**: the booking page renders `<Slots name="booking" id={id} />` below the title, where link shapes add their
+  views. With no link shape kept it renders nothing.
 - **Public page** (`#/book`): a customer picks a service and a free time and gives a name, email and optional phone.
   It calls only `services`, `resources`, `slots` and `book`, which return nothing about other customers. Each public
   booking creates a customer.

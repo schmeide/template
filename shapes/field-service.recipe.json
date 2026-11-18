@@ -1,4 +1,12 @@
 {
   "title": "Field service",
-  "shapes": ["deals", "bookings", "invoices", "requests", "quote-invoice", "deal-documents"]
+  "shapes": [
+    "deals",
+    "bookings",
+    "invoices",
+    "requests",
+    "quote-invoice",
+    "deal-documents",
+    "deal-bookings"
+  ]
 }
