@@ -9,13 +9,17 @@
     "frontend/src/invoices/",
     "docs/shapes/invoices.md"
   ],
-  "routers": [{ "key": "invoices", "name": "invoicesRouter", "from": "./routers/invoices.ts" }],
+  "routers": [
+    { "key": "invoices", "name": "invoicesRouter", "from": "./routers/invoices.ts" },
+    { "key": "quotes", "name": "quotesRouter", "from": "./routers/invoices.ts" }
+  ],
   "pages": [
     {
       "path": "invoices",
       "title": "Invoices",
       "name": "Invoices",
       "from": "./invoices/Invoices.tsx"
-    }
+    },
+    { "path": "quotes", "title": "Quotes", "name": "Quotes", "from": "./invoices/Quotes.tsx" }
   ]
 }

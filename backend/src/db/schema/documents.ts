@@ -17,8 +17,15 @@ import { z } from "zod";
 import { customers } from "./customers.ts";
 
 // A type column keeps siblings (invoices and quotes) in one table with their own numbering.
-export const documentType = pgEnum("document_type", ["invoice"]);
-export const documentStatus = pgEnum("document_status", ["draft", "sent", "paid", "void"]);
+export const documentType = pgEnum("document_type", ["invoice", "quote"]);
+export const documentStatus = pgEnum("document_status", [
+  "draft",
+  "sent",
+  "paid",
+  "void",
+  "accepted",
+  "declined",
+]);
 export const paymentMethod = pgEnum("payment_method", [
   "bank transfer",
   "card",
@@ -37,6 +44,7 @@ export const documents = pgTable(
       .notNull()
       .references(() => customers.id),
     issueDate: date("issue_date").notNull(),
+    // A quote's valid-until date.
     dueDate: date("due_date").notNull(),
     status: documentStatus("status").notNull().default("draft"),
     notes: varchar("notes", { length: 2000 }).notNull().default(""),

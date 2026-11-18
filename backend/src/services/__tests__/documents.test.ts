@@ -37,7 +37,7 @@ describe("documents service", () => {
   it("creates a draft with its lines in order and computed totals", async () => {
     const created = await newInvoice();
 
-    const invoice = await getDocument(db, created.id, today);
+    const invoice = await getDocument(db, "invoice", created.id, today);
 
     expect(invoice).toMatchObject({
       status: "draft",
@@ -68,7 +68,7 @@ describe("documents service", () => {
   it("replaces the fields and lines of a draft", async () => {
     const created = await newInvoice();
 
-    await updateDocument(db, {
+    await updateDocument(db, "invoice", {
       id: created.id,
       customerId: created.customerId,
       issueDate: "2026-03-02",
@@ -77,7 +77,7 @@ describe("documents service", () => {
       currency: "EUR",
       lines: [{ description: "Only", quantity: 1000, unitPrice: 100, taxRate: 0 }],
     });
-    const invoice = await getDocument(db, created.id, today);
+    const invoice = await getDocument(db, "invoice", created.id, today);
 
     expect(invoice).toMatchObject({ notes: "Thanks", currency: "EUR", total: 100 });
     expect(invoice?.lines.map((line) => line.description)).toEqual(["Only"]);
@@ -85,12 +85,12 @@ describe("documents service", () => {
 
   it("does not edit a document once it is sent", async () => {
     const created = await newInvoice();
-    await setStatus(db, created.id, "sent");
+    await setStatus(db, "invoice", created.id, "sent");
 
-    const updated = await updateDocument(db, { ...created, lines: [] });
+    const updated = await updateDocument(db, "invoice", { ...created, lines: [] });
 
     expect(updated).toBeUndefined();
-    expect((await getDocument(db, created.id, today))?.lines).toHaveLength(2);
+    expect((await getDocument(db, "invoice", created.id, today))?.lines).toHaveLength(2);
   });
 
   it.each([
@@ -102,10 +102,10 @@ describe("documents service", () => {
     const created = await newInvoice();
 
     for (const step of steps) {
-      expect(await setStatus(db, created.id, step)).toMatchObject({ status: step });
+      expect(await setStatus(db, "invoice", created.id, step)).toMatchObject({ status: step });
     }
 
-    expect((await getDocument(db, created.id, today))?.status).toBe(final);
+    expect((await getDocument(db, "invoice", created.id, today))?.status).toBe(final);
   });
 
   it.each([
@@ -116,35 +116,35 @@ describe("documents service", () => {
     [["sent"], "sent"],
   ] as const)("after %j refuses %s", async (steps, refused) => {
     const created = await newInvoice();
-    for (const step of steps) await setStatus(db, created.id, step);
+    for (const step of steps) await setStatus(db, "invoice", created.id, step);
 
-    expect(await setStatus(db, created.id, refused)).toBeUndefined();
+    expect(await setStatus(db, "invoice", created.id, refused)).toBeUndefined();
   });
 
   it("derives overdue from the due date of a sent document", async () => {
     const created = await newInvoice({ dueDate: "2026-03-10" });
-    expect((await getDocument(db, created.id, today))?.status).toBe("draft");
+    expect((await getDocument(db, "invoice", created.id, today))?.status).toBe("draft");
 
-    await setStatus(db, created.id, "sent");
+    await setStatus(db, "invoice", created.id, "sent");
 
-    expect((await getDocument(db, created.id, "2026-03-10"))?.status).toBe("sent");
-    expect((await getDocument(db, created.id, today))?.status).toBe("overdue");
+    expect((await getDocument(db, "invoice", created.id, "2026-03-10"))?.status).toBe("sent");
+    expect((await getDocument(db, "invoice", created.id, today))?.status).toBe("overdue");
   });
 
   it("records payments and marks the document paid once covered", async () => {
     const created = await newInvoice();
-    await setStatus(db, created.id, "sent");
+    await setStatus(db, "invoice", created.id, "sent");
     const payment = { documentId: created.id, paidOn: today, method: "card" } as const;
 
     await recordPayment(db, { ...payment, amount: 10_000 });
-    expect(await getDocument(db, created.id, today)).toMatchObject({
+    expect(await getDocument(db, "invoice", created.id, today)).toMatchObject({
       status: "sent",
       paid: 10_000,
       balance: 3999,
     });
 
     await recordPayment(db, { ...payment, amount: 3999 });
-    const invoice = await getDocument(db, created.id, today);
+    const invoice = await getDocument(db, "invoice", created.id, today);
     expect(invoice).toMatchObject({ status: "paid", balance: 0 });
     expect(invoice?.payments).toHaveLength(2);
   });
@@ -154,7 +154,7 @@ describe("documents service", () => {
     const payment = { documentId: created.id, paidOn: today, method: "cash", amount: 1 } as const;
 
     expect(await recordPayment(db, payment)).toBeUndefined();
-    await setStatus(db, created.id, "sent");
+    await setStatus(db, "invoice", created.id, "sent");
     expect(await recordPayment(db, { ...payment, amount: 14_000 })).toBeUndefined();
   });
 
@@ -164,7 +164,7 @@ describe("documents service", () => {
     const base = { customerId: customer.id, issueDate: "2026-03-01", lines: [] };
     const draft = await createDocument(db, "invoice", { ...base, dueDate: "2026-03-31" });
     const late = await createDocument(db, "invoice", { ...base, dueDate: "2026-03-05" });
-    await setStatus(db, late.id, "sent");
+    await setStatus(db, "invoice", late.id, "sent");
 
     const ids = async (filter: Parameters<typeof listDocuments>[2]) =>
       (await listDocuments(db, "invoice", filter, today)).map((invoice) => invoice.id);
@@ -178,14 +178,104 @@ describe("documents service", () => {
 
   it("shares a document by token once it is sent, without internal ids", async () => {
     const created = await newInvoice();
-    expect(await getSharedDocument(db, created.shareToken, today)).toBeUndefined();
+    expect(await getSharedDocument(db, "invoice", created.shareToken, today)).toBeUndefined();
 
-    await setStatus(db, created.id, "sent");
-    const shared = await getSharedDocument(db, created.shareToken, today);
+    await setStatus(db, "invoice", created.id, "sent");
+    const shared = await getSharedDocument(db, "invoice", created.shareToken, today);
 
     expect(shared).toMatchObject({ total: 13_999, status: "sent" });
     expect(shared).not.toHaveProperty("id");
     expect(shared).not.toHaveProperty("shareToken");
-    expect(await getSharedDocument(db, randomUUID(), today)).toBeUndefined();
+    expect(await getSharedDocument(db, "invoice", randomUUID(), today)).toBeUndefined();
+  });
+});
+
+describe("quotes", () => {
+  const newQuote = async (overrides: Partial<DocumentInput> = {}) => {
+    const customer = await createCustomer(db, { name: randomUUID() });
+    return createDocument(db, "quote", {
+      customerId: customer.id,
+      issueDate: "2026-03-01",
+      dueDate: "2026-03-31",
+      lines: [{ description: "Labor", quantity: 1000, unitPrice: 5000, taxRate: 0 }],
+      ...overrides,
+    });
+  };
+
+  it("numbers quotes apart from invoices, with their own prefix", async () => {
+    const first = await newQuote();
+    await newInvoice();
+    const second = await newQuote();
+
+    expect(second.number).toBe(first.number + 1);
+    expect((await getDocument(db, "quote", first.id, today))?.reference).toMatch(/^Q-\d{4,}$/);
+  });
+
+  it("keeps quotes and invoices apart in get and list", async () => {
+    const quote = await newQuote();
+    const invoice = await newInvoice();
+
+    expect(await getDocument(db, "invoice", quote.id, today)).toBeUndefined();
+    expect(await getDocument(db, "quote", invoice.id, today)).toBeUndefined();
+    const listed = (await listDocuments(db, "quote", {}, today)).map((row) => row.id);
+    expect(listed).toContain(quote.id);
+    expect(listed).not.toContain(invoice.id);
+  });
+
+  it.each([
+    [["sent", "accepted"], "accepted"],
+    [["sent", "declined"], "declined"],
+    [["sent", "void"], "void"],
+    [["void"], "void"],
+  ] as const)("allows %j", async (steps, final) => {
+    const created = await newQuote();
+
+    for (const step of steps) {
+      expect(await setStatus(db, "quote", created.id, step)).toMatchObject({ status: step });
+    }
+
+    expect((await getDocument(db, "quote", created.id, today))?.status).toBe(final);
+  });
+
+  it.each([
+    [[], "accepted"],
+    [["sent"], "paid"],
+    [["sent", "accepted"], "void"],
+    [["sent", "declined"], "accepted"],
+  ] as const)("after %j refuses %s", async (steps, refused) => {
+    const created = await newQuote();
+    for (const step of steps) await setStatus(db, "quote", created.id, step);
+
+    expect(await setStatus(db, "quote", created.id, refused)).toBeUndefined();
+  });
+
+  it("does not accept an invoice or change a document through the other type", async () => {
+    const invoice = await newInvoice();
+    await setStatus(db, "invoice", invoice.id, "sent");
+
+    expect(await setStatus(db, "invoice", invoice.id, "accepted")).toBeUndefined();
+    expect(await setStatus(db, "quote", invoice.id, "void")).toBeUndefined();
+    expect(await updateDocument(db, "quote", { ...(await newInvoice()), lines: [] })).toBe(
+      undefined
+    );
+  });
+
+  it("derives expired from the valid-until date of a sent quote", async () => {
+    const created = await newQuote({ dueDate: "2026-03-10" });
+    await setStatus(db, "quote", created.id, "sent");
+
+    expect((await getDocument(db, "quote", created.id, "2026-03-10"))?.status).toBe("sent");
+    expect((await getDocument(db, "quote", created.id, today))?.status).toBe("expired");
+    const expired = await listDocuments(db, "quote", { status: "expired" }, today);
+    expect(expired.map((row) => row.id)).toContain(created.id);
+  });
+
+  it("takes no payments", async () => {
+    const created = await newQuote();
+    await setStatus(db, "quote", created.id, "sent");
+
+    expect(
+      await recordPayment(db, { documentId: created.id, paidOn: today, method: "cash", amount: 1 })
+    ).toBeUndefined();
   });
 });

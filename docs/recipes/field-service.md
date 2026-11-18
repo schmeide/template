@@ -18,10 +18,8 @@ The menu follows this order; `customers` comes second, right after the first sha
   resource is a technician or a van, a service is a job type with its usual length (boiler service, 60 minutes, with
   30 minutes of travel as the buffer), and places stay at 1. Delete the public "Book online" page: staff dispatch the
   work, and customers ask through the callout form instead.
-- **Quotes and invoices**, from [invoices](../shapes/invoices.md). Follow
-  [Quotes and invoices together](../shapes/invoices.md#quotes-and-invoices-together): one `documents` table with
-  `"quote"` added to the document type, the quote statuses and `valid_until` from
-  [Turning invoices into quotes](../shapes/invoices.md#turning-invoices-into-quotes), and payments on invoices only.
+- **Quotes and invoices**, from [invoices](../shapes/invoices.md), as it ships: both pages, one `documents` table,
+  and payments on invoices only.
 - **Callouts and checklists**, from [requests](../shapes/requests.md). Follow
   [Turning leave requests into another app](../shapes/requests.md#turning-leave-requests-into-another-app) with two
   types: "Callout request" (address, problem, urgency as a choice, preferred days) with public intake on, for the

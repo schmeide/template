@@ -15,10 +15,8 @@ The menu follows this order; `customers` comes second, right after the first sha
 - **Time**, from [stock](../shapes/stock.md). Follow
   [Turning stock into time tracking](../shapes/stock.md#turning-stock-into-time-tracking): an item becomes a project,
   entries are minutes, billable or non-billable, and the low stock level becomes a budget of hours.
-- **Proposals and invoices**, from [invoices](../shapes/invoices.md). Follow
-  [Quotes and invoices together](../shapes/invoices.md#quotes-and-invoices-together), naming the quote type
-  "proposal" (prefix `P`), with the statuses and `valid_until` from
-  [Turning invoices into quotes](../shapes/invoices.md#turning-invoices-into-quotes).
+- **Proposals and invoices**, from [invoices](../shapes/invoices.md). Rename quotes to proposals (prefix `P`) as
+  [Renaming a document type](../shapes/invoices.md#renaming-a-document-type) describes.
 
 ### Two boards
 

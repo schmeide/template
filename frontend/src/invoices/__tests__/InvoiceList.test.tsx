@@ -1,5 +1,6 @@
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { kinds } from "../format.ts";
 import { InvoiceList } from "../InvoiceList.tsx";
 import { renderWithBackend, type Outputs } from "./fakeBackend.tsx";
 
@@ -51,5 +52,22 @@ describe("InvoiceList", () => {
     renderWithBackend(<InvoiceList />, { "invoices.list": () => [] });
 
     expect(await screen.findByText("No invoices yet")).toBeInTheDocument();
+  });
+
+  it("lists quotes with their own statuses and no balance", async () => {
+    renderWithBackend(<InvoiceList kind={kinds.quote} />, {
+      "quotes.list": () => [summary({ type: "quote", reference: "Q-0001", status: "expired" })],
+    });
+
+    expect(await screen.findByRole("link", { name: "Q-0001" })).toHaveAttribute(
+      "href",
+      "#/quotes/1"
+    );
+    expect(screen.getByRole("heading", { name: "Quotes" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Valid until" })).toBeInTheDocument();
+    expect(screen.queryByRole("columnheader", { name: "Balance" })).not.toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Accepted" })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "Paid" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "New quote" })).toHaveAttribute("href", "#/quotes/new");
   });
 });

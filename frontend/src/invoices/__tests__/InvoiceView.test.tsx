@@ -1,5 +1,6 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { kinds } from "../format.ts";
 import { InvoiceView, SharedInvoice } from "../InvoiceView.tsx";
 import { invoice, renderWithBackend } from "./fakeBackend.tsx";
 
@@ -76,6 +77,39 @@ describe("InvoiceView", () => {
         documentId: 7,
         amount: 5050,
         method: "card",
+      })
+    );
+  });
+});
+
+describe("InvoiceView for a quote", () => {
+  it("shows the valid-until date, takes no payment, and marks a sent quote accepted", async () => {
+    const quote = invoice({ type: "quote", reference: "Q-0007", status: "sent" });
+    const calls = renderWithBackend(<InvoiceView id={7} kind={kinds.quote} />, {
+      "quotes.get": () => quote,
+      "quotes.setStatus": () => ({ ...quote, status: "accepted" }),
+    });
+    const user = userEvent.setup();
+
+    expect(await screen.findByRole("heading", { name: "Q-0007" })).toBeInTheDocument();
+    expect(screen.getByText(/^Valid until/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Prepared for" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Back to quotes" })).toHaveAttribute(
+      "href",
+      "#/quotes"
+    );
+    expect(screen.getByLabelText("Share link")).toHaveValue(
+      `${window.location.origin}${window.location.pathname}#/quotes/share/${quote.shareToken}`
+    );
+    expect(screen.queryByRole("button", { name: "Record payment" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Mark as declined" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Mark as accepted" }));
+
+    await waitFor(() =>
+      expect(calls.find((call) => call.path === "quotes.setStatus")?.input).toEqual({
+        id: 7,
+        status: "accepted",
       })
     );
   });

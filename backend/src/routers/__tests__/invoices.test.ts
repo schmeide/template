@@ -94,6 +94,28 @@ describe("invoices router", () => {
     ).rejects.toMatchObject(withCode("CONFLICT"));
   });
 
+  it("keeps quotes in their own router, which takes no invoice ids", async () => {
+    const invoice = await newInvoice();
+    const quote = await caller.quotes.create({
+      customerId: invoice.customerId,
+      issueDate: "2026-03-01",
+      dueDate: "2026-03-31",
+      lines: [line],
+    });
+
+    expect(await caller.quotes.get({ id: quote.id })).toMatchObject({ type: "quote" });
+    await expect(caller.quotes.get({ id: invoice.id })).rejects.toMatchObject(
+      withCode("NOT_FOUND")
+    );
+    await caller.quotes.setStatus({ id: quote.id, status: "sent" });
+    expect(await caller.quotes.setStatus({ id: quote.id, status: "accepted" })).toMatchObject({
+      status: "accepted",
+    });
+    await expect(
+      caller.invoices.setStatus({ id: invoice.id, status: "accepted" })
+    ).rejects.toMatchObject(withCode("CONFLICT"));
+  });
+
   it("serves a sent invoice by its share token over http", async () => {
     const created = await newInvoice();
     await caller.invoices.setStatus({ id: created.id, status: "sent" });
