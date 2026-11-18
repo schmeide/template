@@ -197,6 +197,13 @@
       "when": 1795051260453,
       "tag": "0027_create_request_units",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1795051457268,
+      "tag": "0028_create_membership",
+      "breakpoints": true
     }
   ]
 }

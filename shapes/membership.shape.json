@@ -1,0 +1,23 @@
+{
+  "requires": ["customers", "money"],
+  "files": [
+    "backend/src/db/schema/membership.ts",
+    "backend/src/services/membership.ts",
+    "backend/src/services/__tests__/membership.test.ts",
+    "backend/src/routers/membership.ts",
+    "backend/src/routers/__tests__/membership.test.ts",
+    "frontend/src/membership/",
+    "docs/shapes/membership.md"
+  ],
+  "routers": [
+    { "key": "membership", "name": "membershipRouter", "from": "./routers/membership.ts" }
+  ],
+  "pages": [
+    {
+      "path": "members",
+      "title": "Members",
+      "name": "Members",
+      "from": "./membership/Members.tsx"
+    }
+  ]
+}
