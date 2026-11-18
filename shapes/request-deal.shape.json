@@ -1,0 +1,20 @@
+{
+  "requires": ["requests", "deals", "customers"],
+  "files": [
+    "backend/src/db/schema/requestDeals.ts",
+    "backend/src/services/requestDeals.ts",
+    "backend/src/services/__tests__/requestDeals.test.ts",
+    "backend/src/routers/requestDeals.ts",
+    "backend/src/routers/__tests__/requestDeals.test.ts",
+    "frontend/src/requestDeals/",
+    "docs/shapes/request-deal.md"
+  ],
+  "routers": [
+    { "key": "requestDeals", "name": "requestDealsRouter", "from": "./routers/requestDeals.ts" }
+  ],
+  "pages": [],
+  "slots": [
+    { "slot": "request", "name": "RequestDeal", "from": "./requestDeals/RequestDeal.tsx" },
+    { "slot": "deal", "name": "DealSource", "from": "./requestDeals/RequestDeal.tsx" }
+  ]
+}

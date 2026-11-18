@@ -92,6 +92,13 @@
       "when": 1795030410893,
       "tag": "0012_create_deal_bookings",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1795030534200,
+      "tag": "0013_create_request_deals",
+      "breakpoints": true
     }
   ]
 }

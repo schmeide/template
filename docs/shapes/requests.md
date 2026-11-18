@@ -22,6 +22,8 @@ client intake are the same shape with different request types, fields and approv
 - **Decisions** (`approval_decisions`): one row for every status change, with who made it, the outcome and an
   optional comment, written in the same transaction as the change. The request page shows them newest first.
 - **Public form** (`#/requests/form/<token>`): see [Public intake](#public-intake).
+- **Slot**: the request page renders `<Slots name="request" id={id} />` below the status, where link shapes add
+  their views. With no link shape kept it renders nothing.
 
 ## Statuses
 
