@@ -10,6 +10,7 @@ import {
   schedulerServices,
   type Booking,
   type BookingStatus,
+  type ChangeCustomer,
   type Exception,
   type MoveBooking,
   type NewBooking,
@@ -345,8 +346,8 @@ export const createBooking = async (
 
 // The public page's booking: creates the customer in the same transaction, so a slot taken in the
 // meantime leaves nothing behind. Returns only what the person booking may see.
-// ponytail: every public booking creates a new customer; match returning customers once they can
-// sign in or confirm their email.
+// ponytail: every public booking creates a new customer, and staff move it to the right one with
+// `changeCustomer`; match returning customers once they can sign in or confirm their email.
 export const bookPublicly = async (
   db: Db,
   { name, email, phone, ...slot }: Readonly<PublicBooking>,
@@ -563,6 +564,34 @@ export const cancelSeries = (db: Db, id: number): Promise<readonly Booking[] | u
       .where(inArray(schedulerBookings.id, ids))
       .returning();
     return cancelled.sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
+  });
+
+// Staff move a booking, cancelled ones too, onto another customer, such as the member a public
+// sign-up was really for; the customer the public page made stays. Under the booking's row lock,
+// so of two people acting at once the second finds it no longer on `fromCustomerId` and gets
+// undefined, as for a missing booking or customer.
+export const changeCustomer = (
+  db: Db,
+  { id, fromCustomerId, customerId }: Readonly<ChangeCustomer>
+): Promise<Booking | undefined> =>
+  db.transaction(async (tx) => {
+    const [booking] = await tx
+      .select()
+      .from(schedulerBookings)
+      .where(eq(schedulerBookings.id, id))
+      .for("update");
+    if (booking?.customerId !== fromCustomerId) return undefined;
+    const [customer] = await tx
+      .select({ id: customers.id })
+      .from(customers)
+      .where(eq(customers.id, customerId));
+    if (!customer) return undefined;
+    const [moved] = await tx
+      .update(schedulerBookings)
+      .set({ customerId })
+      .where(eq(schedulerBookings.id, id))
+      .returning();
+    return moved;
   });
 
 // Any status change except bringing a cancelled booking back, whose slot may be gone.

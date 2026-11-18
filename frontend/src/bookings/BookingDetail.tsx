@@ -15,6 +15,10 @@ export function BookingDetail({ id }: { readonly id: number }) {
   const setStatus = useMutation(trpc.bookings.setStatus.mutationOptions({ onSettled: refresh }));
   const move = useMutation(trpc.bookings.move.mutationOptions({ onSettled: refresh }));
   const moveSeries = useMutation(trpc.bookings.moveSeries.mutationOptions({ onSettled: refresh }));
+  const customers = useQuery(trpc.customers.list.queryOptions());
+  const changeCustomer = useMutation(
+    trpc.bookings.changeCustomer.mutationOptions({ onSettled: refresh })
+  );
   const [confirmingCancel, setConfirmingCancel] = useState(false);
   const cancelSeries = useMutation(
     trpc.bookings.cancelSeries.mutationOptions({
@@ -37,6 +41,14 @@ export function BookingDetail({ id }: { readonly id: number }) {
     if (!slot) return;
     if (data.has("later")) moveSeries.mutate({ id, ...slot });
     else move.mutate({ id, ...slot });
+  };
+
+  const onCustomer = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const customerId = Number(new FormData(event.currentTarget).get("customerId"));
+    if (booking.data && customerId) {
+      changeCustomer.mutate({ id, fromCustomerId: booking.data.customerId, customerId });
+    }
   };
 
   const data = booking.data;
@@ -184,16 +196,53 @@ export function BookingDetail({ id }: { readonly id: number }) {
               {moveError && <p role="alert">Unable to move: {moveError.message}</p>}
             </form>
           )}
+          <form
+            key={data.customerId}
+            onSubmit={onCustomer}
+            aria-labelledby="booking-customer"
+            className="booking-form"
+          >
+            <h2 id="booking-customer">Change customer</h2>
+            <label>
+              Customer{" "}
+              <select name="customerId" required defaultValue="" aria-describedby="customer-help">
+                <option value="" disabled>
+                  Choose a customer
+                </option>
+                {customers.data
+                  ?.filter((customer) => customer.id !== data.customerId)
+                  .map((customer) => (
+                    <option key={customer.id} value={customer.id}>
+                      {customer.email ? `${customer.name}, ${customer.email}` : customer.name}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            <p id="customer-help" className="booking-muted">
+              The time and status stay as they are, and {data.customer.name} stays in your
+              customers.
+            </p>
+            <p>
+              <button type="submit" disabled={changeCustomer.isPending}>
+                Change customer
+              </button>
+            </p>
+            {changeCustomer.error && (
+              <p role="alert">Unable to change the customer: {changeCustomer.error.message}</p>
+            )}
+          </form>
           <p role="status">
-            {setStatus.isSuccess
-              ? "Status saved"
-              : move.isSuccess
-                ? "Booking moved"
-                : moveSeries.isSuccess
-                  ? "Bookings moved"
-                  : cancelSeries.isSuccess
-                    ? "Bookings cancelled"
-                    : ""}
+            {changeCustomer.isSuccess
+              ? "Customer changed"
+              : setStatus.isSuccess
+                ? "Status saved"
+                : move.isSuccess
+                  ? "Booking moved"
+                  : moveSeries.isSuccess
+                    ? "Bookings moved"
+                    : cancelSeries.isSuccess
+                      ? "Bookings cancelled"
+                      : ""}
           </p>
         </>
       )}

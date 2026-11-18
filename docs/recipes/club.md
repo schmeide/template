@@ -40,16 +40,16 @@ exists, the orders shape becomes the way to give online (see below).
 
 ## Links between them
 
-None of these is built yet, and each has an issue. Until they exist, staff carry the details across by hand.
+The ones not built yet each have an issue. Until they exist, staff carry the details across by hand.
 
 - **Membership application to member** (`requests` and `customers`, schmeide/template#62): an approved application
   becomes a member, once, enforced by a unique request id in a link table and a lock on the request row. Staff check
   the details filled from the answers named Name, Email, Phone and Address, or pick an existing member; the typed
   email is never matched on its own.
-- **Event sign-up to member** (a change to `bookings`, schmeide/template#65): every public sign-up creates a new
-  customer. Staff move a booking onto the existing member from the booking page, under a lock on the booking row. It
-  is not a link shape, since `bookings` already requires `customers`. Matching sign-ups to members by email waits for
-  sign-in or email confirmation.
+- **Event sign-up to member**: built into `bookings`, which already requires `customers`. Every public sign-up
+  creates a new member record; staff use "Change customer" on the booking page to move the sign-up onto the existing
+  member, as [Changing a booking's customer](../shapes/bookings.md#changing-a-bookings-customer) describes. The extra
+  record stays. Matching sign-ups to members by email waits for sign-in or email confirmation.
 - **Donation to member**: none needed. A donation is a document addressed to the member or donor.
 
 ## Membership

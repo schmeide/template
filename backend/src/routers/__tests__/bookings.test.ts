@@ -80,6 +80,37 @@ describe("bookings router", () => {
     } satisfies Partial<TRPCError>);
   });
 
+  it("moves a booking onto another customer, and refuses a stale or missing choice", async () => {
+    const resource = await caller.bookings.createResource({ name: randomUUID(), timeZone: "UTC" });
+    const service = await caller.bookings.createService({ name: "Fix", durationMinutes: 60 });
+    await caller.bookings.addRule({
+      resourceId: resource.id,
+      weekday: 1,
+      startTime: "09:00",
+      endTime: "10:00",
+    });
+    const [guest, member] = await Promise.all([
+      caller.customers.create({ name: randomUUID() }),
+      caller.customers.create({ name: randomUUID() }),
+    ]);
+    const booking = await caller.bookings.create({
+      serviceId: service.id,
+      resourceId: resource.id,
+      startsAt: new Date("2030-01-14T09:00:00Z"),
+      customerId: guest.id,
+    });
+    const change = { id: booking.id, fromCustomerId: guest.id, customerId: member.id };
+
+    expect(await caller.bookings.changeCustomer(change)).toMatchObject({ customerId: member.id });
+    expect((await caller.bookings.get({ id: booking.id })).customer.id).toBe(member.id);
+    await expect(caller.bookings.changeCustomer(change)).rejects.toMatchObject({
+      code: "CONFLICT",
+    } satisfies Partial<TRPCError>);
+    await expect(
+      caller.bookings.changeCustomer({ ...change, customerId: 1.5 })
+    ).rejects.toMatchObject(badRequest);
+  });
+
   it("books, moves and cancels a series, and names the dates that are not free", async () => {
     const resource = await caller.bookings.createResource({ name: randomUUID(), timeZone: "UTC" });
     const service = await caller.bookings.createService({ name: "Fix", durationMinutes: 60 });
