@@ -1,0 +1,120 @@
+.request-views ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.request-actor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 8px 12px;
+  border: 1px solid #c8c8c8;
+  border-radius: 8px;
+}
+
+.request-hint,
+.request-optional {
+  color: #555;
+}
+
+.request-hint {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.request-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.request-form {
+  display: grid;
+  gap: 12px;
+  max-inline-size: 40rem;
+}
+
+.request-form > label,
+.request-check > label:last-child {
+  display: grid;
+  gap: 4px;
+}
+
+.request-check,
+.request-field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px 16px;
+  border: 1px solid #c8c8c8;
+  border-radius: 6px;
+}
+
+.request-type {
+  margin-block-end: 32px;
+}
+
+.request-table {
+  border-collapse: collapse;
+}
+
+.request-table caption {
+  text-align: start;
+  color: #555;
+}
+
+.request-table th,
+.request-table td {
+  padding: 4px 12px 4px 0;
+  text-align: start;
+  border-block-end: 1px solid #e0e0e0;
+}
+
+.request-table td:last-child {
+  font-variant-numeric: tabular-nums;
+}
+
+.request-answers {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 16px;
+}
+
+.request-answers div {
+  display: contents;
+}
+
+.request-answers dt {
+  font-weight: 600;
+}
+
+.request-answers dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.request-history {
+  display: grid;
+  gap: 8px;
+  padding-inline-start: 20px;
+}
+
+.request-comment {
+  margin-block: 4px 0;
+  white-space: pre-line;
+}
+
+/* Off screen and inert, so people neither see nor reach it; bots that fill every input do. */
+.request-trap {
+  position: absolute;
+  inset-inline-start: -10000px;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+}

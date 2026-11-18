@@ -1,0 +1,21 @@
+{
+  "requires": [],
+  "files": [
+    "backend/src/db/schema/approval.ts",
+    "backend/src/services/approval.ts",
+    "backend/src/services/__tests__/approval.test.ts",
+    "backend/src/routers/requests.ts",
+    "backend/src/routers/__tests__/requests.test.ts",
+    "frontend/src/requests/",
+    "docs/shapes/requests.md"
+  ],
+  "routers": [{ "key": "requests", "name": "requestsRouter", "from": "./routers/requests.ts" }],
+  "pages": [
+    {
+      "path": "requests",
+      "title": "Requests",
+      "name": "Requests",
+      "from": "./requests/Requests.tsx"
+    }
+  ]
+}
