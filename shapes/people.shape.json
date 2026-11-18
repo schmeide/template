@@ -1,0 +1,14 @@
+{
+  "requires": [],
+  "files": [
+    "backend/src/db/schema/people.ts",
+    "backend/src/services/people.ts",
+    "backend/src/services/__tests__/people.test.ts",
+    "backend/src/routers/people.ts",
+    "backend/src/routers/__tests__/people.test.ts",
+    "frontend/src/people/",
+    "docs/shapes/people.md"
+  ],
+  "routers": [{ "key": "people", "name": "peopleRouter", "from": "./routers/people.ts" }],
+  "pages": []
+}

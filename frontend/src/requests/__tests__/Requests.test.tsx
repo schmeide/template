@@ -22,7 +22,7 @@ describe("Requests", () => {
 
   it("asks who you are, then shows your requests and remembers the choice", async () => {
     const calls = renderWithBackend(<Requests />, {
-      "requests.people": () => [sam, kim],
+      "people.list": () => [sam, kim],
       "requests.list": () => [row()],
     });
     const user = userEvent.setup();
@@ -36,14 +36,14 @@ describe("Requests", () => {
       "#/requests/30"
     );
     expect(calls).toContainEqual({ path: "requests.list", input: { submitterId: sam.id } });
-    expect(window.localStorage.getItem("requests.actingAs")).toBe(String(sam.id));
+    expect(window.localStorage.getItem("people.actingAs")).toBe(String(sam.id));
   });
 
   it("leaves your own requests and other approvers' requests out of your review queue", async () => {
-    window.localStorage.setItem("requests.actingAs", String(kim.id));
+    window.localStorage.setItem("people.actingAs", String(kim.id));
     window.location.hash = "#/requests/review";
     renderWithBackend(<Requests />, {
-      "requests.people": () => [sam, kim],
+      "people.list": () => [sam, kim],
       "requests.list": () => [
         row({ id: 31 }),
         row({ id: 32, submitterId: kim.id, submitterName: kim.name }),
@@ -59,8 +59,8 @@ describe("Requests", () => {
   it("adds a name and acts as it", async () => {
     const dana = { id: 3, name: "Dana" };
     const calls = renderWithBackend(<Requests />, {
-      "requests.people": () => [sam, kim, dana],
-      "requests.addPerson": () => dana,
+      "people.list": () => [sam, kim, dana],
+      "people.add": () => dana,
       "requests.list": () => [],
     });
     const user = userEvent.setup();
@@ -69,7 +69,7 @@ describe("Requests", () => {
     await user.click(screen.getByRole("button", { name: "Add name" }));
 
     await waitFor(() => expect(screen.getByLabelText("Acting as")).toHaveValue("3"));
-    expect(calls).toContainEqual({ path: "requests.addPerson", input: { name: "Dana" } });
+    expect(calls).toContainEqual({ path: "people.add", input: { name: "Dana" } });
     expect(await screen.findByText(/You have no requests yet/)).toBeInTheDocument();
   });
 });

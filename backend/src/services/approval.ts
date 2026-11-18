@@ -4,17 +4,14 @@ import { z } from "zod";
 import type { Db } from "../db/client.ts";
 import {
   approvalDecisions,
-  approvalPeople,
   approvalRequests,
   approvalTypes,
   checkAnswerSchema,
   type Answers,
   type Field,
   type ListFilter,
-  type NewPerson,
   type NewRequest,
   type NewType,
-  type Person,
   type PublicRequest,
   type Request,
   type RequestType,
@@ -23,6 +20,7 @@ import {
   type Transition,
   type TypeUpdate,
 } from "../db/schema/approval.ts";
+import { people } from "../db/schema/people.ts";
 
 type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
 
@@ -85,19 +83,6 @@ const parseAnswers = (fields: readonly Field[], answers: unknown, complete: bool
     );
   }
   return result.data as Answers;
-};
-
-export const listPeople = (db: Db): Promise<Person[]> =>
-  db.select().from(approvalPeople).orderBy(approvalPeople.name);
-
-// Adding a name that exists returns that person.
-export const addPerson = async (db: Db, input: Readonly<NewPerson>): Promise<Person> => {
-  const [person] = await db
-    .insert(approvalPeople)
-    .values(input)
-    .onConflictDoUpdate({ target: approvalPeople.name, set: { name: input.name } })
-    .returning();
-  return person;
 };
 
 const seedTypes = (db: Db) =>
@@ -248,7 +233,7 @@ export const transition = (
     return moved;
   });
 
-const submitters = alias(approvalPeople, "submitters");
+const submitters = alias(people, "submitters");
 
 export const listRequests = (db: Db, filter: Readonly<ListFilter>) => {
   const conditions: readonly (SQL | undefined)[] = [
@@ -297,13 +282,13 @@ export const getRequest = async (db: Db, id: number) => {
     .select({
       id: approvalDecisions.id,
       actorId: approvalDecisions.actorId,
-      actorName: approvalPeople.name,
+      actorName: people.name,
       outcome: approvalDecisions.outcome,
       comment: approvalDecisions.comment,
       createdAt: approvalDecisions.createdAt,
     })
     .from(approvalDecisions)
-    .leftJoin(approvalPeople, eq(approvalDecisions.actorId, approvalPeople.id))
+    .leftJoin(people, eq(approvalDecisions.actorId, people.id))
     .where(eq(approvalDecisions.requestId, id))
     .orderBy(desc(approvalDecisions.id));
   const { request, ...rest } = row;

@@ -1,0 +1,21 @@
+{
+  "requires": ["csv", "money"],
+  "files": [
+    "backend/src/db/schema/dashboard.ts",
+    "backend/src/services/dashboard.ts",
+    "backend/src/services/__tests__/dashboard.test.ts",
+    "backend/src/routers/dashboard.ts",
+    "backend/src/routers/__tests__/dashboard.test.ts",
+    "frontend/src/dashboard/",
+    "docs/shapes/dashboard.md"
+  ],
+  "routers": [{ "key": "dashboard", "name": "dashboardRouter", "from": "./routers/dashboard.ts" }],
+  "pages": [
+    {
+      "path": "dashboard",
+      "title": "Dashboard",
+      "name": "Dashboard",
+      "from": "./dashboard/Dashboard.tsx"
+    }
+  ]
+}

@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
 import { useHashPath } from "../App.tsx";
 import { useTRPC } from "../trpc.ts";
-import { ActingAs } from "./ActingAs.tsx";
+import { ActingAs, useActingAs } from "../people/ActingAs.tsx";
 import { MyRequests, ReviewQueue } from "./Lists.tsx";
 import { NewRequest } from "./NewRequest.tsx";
 import { PublicForm } from "./PublicForm.tsx";
@@ -17,32 +16,6 @@ const views = [
   { path: "types", title: "Request types" },
 ] as const;
 
-const storageKey = "requests.actingAs";
-
-// ponytail: who you are is a name picked here and kept in this browser, so anyone can act as
-// anyone. Use the signed-in user instead once platform sign-in exists (schmeide/schmeide.app#84).
-const readStored = (): number | undefined => {
-  try {
-    const id = Number(window.localStorage.getItem(storageKey));
-    return Number.isInteger(id) && id > 0 ? id : undefined;
-  } catch {
-    return undefined;
-  }
-};
-
-const useActingAs = () => {
-  const [actorId, setActorId] = useState(readStored);
-  const choose = (id: number) => {
-    setActorId(id);
-    try {
-      window.localStorage.setItem(storageKey, String(id));
-    } catch {
-      // Storage can be blocked; the choice then lasts until the page reloads.
-    }
-  };
-  return [actorId, choose] as const;
-};
-
 // #/requests, #/requests/new, #/requests/review, #/requests/types, #/requests/<id>, and the public
 // form at #/requests/form/<token>.
 // ponytail: the public form still shows the app menu; with no sign-in every visitor is staff
@@ -50,7 +23,7 @@ const useActingAs = () => {
 export function Requests() {
   const [, first = "", second] = useHashPath();
   const trpc = useTRPC();
-  const people = useQuery(trpc.requests.people.queryOptions());
+  const people = useQuery(trpc.people.list.queryOptions());
   const [actorId, setActorId] = useActingAs();
   const actor = people.data?.find((person) => person.id === actorId);
 
@@ -91,7 +64,12 @@ export function Requests() {
           ))}
         </ul>
       </nav>
-      <ActingAs people={people.data ?? []} actorId={actor?.id} onChoose={setActorId} />
+      <ActingAs
+        people={people.data ?? []}
+        actorId={actor?.id}
+        onChoose={setActorId}
+        hint="Until sign-in exists, anyone can pick any name. Nobody can approve a request filed under the same name."
+      />
       {view}
     </>
   );
