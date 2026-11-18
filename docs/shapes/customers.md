@@ -3,6 +3,9 @@
 The people and businesses a project deals with: name, email, phone and address, with a list and a detail page
 (`customers` table, Customers page).
 
+The detail page renders `<Slots name="customer" id={id} />`, where link shapes add their views; with none kept it
+renders nothing. [customer-intake](customer-intake.md) adds "Send intake form" there.
+
 It is a shape of its own because more than one shape needs it. Invoices bill a customer, and a deal's contact is a
 customer, so a project that keeps both shares one list. Nobody keeps it on its own; it comes with the shapes that
 require it.

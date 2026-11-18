@@ -12,6 +12,8 @@ import { AccountDeal } from "./dealAccounts/DealAccount.tsx";
 import { DealDocuments } from "./dealDocuments/DealDocuments.tsx";
 import { Deals } from "./deals/Deals.tsx";
 import { Handbook } from "./handbook/Handbook.tsx";
+import { CustomerIntakes } from "./intakes/CustomerIntakes.tsx";
+import { Intake } from "./intakes/Intake.tsx";
 import { Invoices } from "./invoices/Invoices.tsx";
 import { Quotes } from "./invoices/Quotes.tsx";
 import { Notes } from "./notes/Notes.tsx";
@@ -29,6 +31,7 @@ export const pages: readonly Page[] = [
   { path: "assets", title: "Assets", Component: Assets },
   { path: "bookings", title: "Bookings", Component: Bookings },
   { path: "book", title: "Book online", Component: BookOnline },
+  { path: "intake", title: "Intake forms", Component: Intake },
   { path: "customers", title: "Customers", Component: Customers },
   { path: "dashboard", title: "Dashboard", Component: Dashboard },
   { path: "deals", title: "Deals", Component: Deals },
@@ -44,6 +47,7 @@ export const pages: readonly Page[] = [
 
 // One entry per view a shape adds to a page it does not own, rendered by <Slots> on that page.
 export const slots: readonly Slot[] = [
+  { slot: "customer", Component: CustomerIntakes },
   { slot: "deal", Component: DealAccount },
   { slot: "account", Component: AccountDeal },
   { slot: "deal", Component: DealVisits },

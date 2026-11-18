@@ -1,1 +1,1 @@
-{ "title": "Studio, clinic or salon", "shapes": ["bookings", "requests"] }
+{ "title": "Studio, clinic or salon", "shapes": ["bookings", "requests", "customer-intake"] }

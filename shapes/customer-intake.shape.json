@@ -1,0 +1,24 @@
+{
+  "requires": ["requests", "customers", "ratelimit"],
+  "files": [
+    "backend/src/db/schema/intakes.ts",
+    "backend/src/services/intakes.ts",
+    "backend/src/services/__tests__/intakes.test.ts",
+    "backend/src/routers/intakes.ts",
+    "backend/src/routers/__tests__/intakes.test.ts",
+    "frontend/src/intakes/",
+    "docs/shapes/customer-intake.md"
+  ],
+  "routers": [{ "key": "intakes", "name": "intakesRouter", "from": "./routers/intakes.ts" }],
+  "pages": [
+    {
+      "path": "intake",
+      "title": "Intake forms",
+      "name": "Intake",
+      "from": "./intakes/Intake.tsx"
+    }
+  ],
+  "slots": [
+    { "slot": "customer", "name": "CustomerIntakes", "from": "./intakes/CustomerIntakes.tsx" }
+  ]
+}
