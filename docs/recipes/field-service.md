@@ -27,14 +27,16 @@ The menu follows this order; `customers` comes second, right after the first sha
 
 ## Links between them
 
-Each link is a shape of its own that requires both sides. The first is built and kept by this recipe; each of the
-others has an issue, and until it exists staff carry the details across by hand.
+Each link is a shape of its own that requires both sides. The first two are built and kept by this recipe; each of
+the others has an issue, and until it exists staff carry the details across by hand.
 
 - **Quote to invoice**, built: [quote-invoice](../shapes/quote-invoice.md). "Make invoice" on an accepted quote makes
   a draft invoice with a copy of its lines, for the same customer, once. The quote and the invoice link to each other.
   Voiding the invoice does not free the quote.
-- **Job to quotes and invoices** (`deals` and `invoices`, schmeide/template#39): from a job, make a quote or invoice for
-  its customer and list them on the job. A document belongs to at most one job. A job with no customer gets none.
+- **Job to quotes and invoices**, built: [deal-documents](../shapes/deal-documents.md). "New quote" or "New invoice"
+  on a job makes a draft for its customer and lists it on the job with its number, status and total. A document
+  belongs to at most one job. A job with no customer gets none. Rename "deal" to "job" in its messages, as
+  [its doc](../shapes/deal-documents.md#what-usually-varies) describes.
 - **Job to visits** (`deals` and `bookings`, schmeide/template#40): from a job, book one or more visits through the
   bookings service, so the no-double-booking rules still hold. A booking belongs to at most one job; cancelling it
   keeps the link and shows the visit as cancelled.

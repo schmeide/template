@@ -17,6 +17,8 @@ returns are the same shape with different names, stages and fields.
   reader hears where the deal landed.
 - **Table** (`#/deals/table`): every deal with a stage filter and a search over title, contact and owner.
 - **Deal page** (`#/deals/<id>`): edit the fields, move to any stage, add notes, and read the activity timeline.
+- **Slot**: the deal page renders `<Slots name="deal" id={id} />` below the title, where link shapes add their
+  views. With no link shape kept it renders nothing.
 - **Activity** (`pipeline_activity` table): notes, and a row for every stage change, written in the same transaction
   as the move. Reordering within a stage is not recorded.
 - **Ordering**: positions in a stage run 0, 1, 2 with no gaps. A move locks the deal's stage row and the target

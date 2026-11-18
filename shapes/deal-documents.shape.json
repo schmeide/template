@@ -1,0 +1,19 @@
+{
+  "requires": ["deals", "invoices"],
+  "files": [
+    "backend/src/db/schema/dealDocuments.ts",
+    "backend/src/services/dealDocuments.ts",
+    "backend/src/services/__tests__/dealDocuments.test.ts",
+    "backend/src/routers/dealDocuments.ts",
+    "backend/src/routers/__tests__/dealDocuments.test.ts",
+    "frontend/src/dealDocuments/",
+    "docs/shapes/deal-documents.md"
+  ],
+  "routers": [
+    { "key": "dealDocuments", "name": "dealDocumentsRouter", "from": "./routers/dealDocuments.ts" }
+  ],
+  "pages": [],
+  "slots": [
+    { "slot": "deal", "name": "DealDocuments", "from": "./dealDocuments/DealDocuments.tsx" }
+  ]
+}

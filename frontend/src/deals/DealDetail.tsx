@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { FormEvent } from "react";
+import { Slots } from "../App.tsx";
 import { useTRPC } from "../trpc.ts";
 import { focusOnMount } from "./format.ts";
 
@@ -55,6 +56,7 @@ export function DealDetail({ id }: { readonly id: number }) {
           <h1 ref={focusOnMount} tabIndex={-1}>
             {deal.data.title}
           </h1>
+          <Slots name="deal" id={id} />
           <form onSubmit={onMove} className="deal-actions">
             <label>
               Stage{" "}
