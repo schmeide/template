@@ -144,7 +144,7 @@ const findType = async (db: Db | Tx, id: number) => {
 
 // A draft with the type's fields copied onto it. Answers may be partial until it is submitted.
 export const createRequest = async (
-  db: Db,
+  db: Db | Tx,
   { typeId, actorId, answers }: Readonly<NewRequest>
 ): Promise<Request | undefined> => {
   const type = await findType(db, typeId);

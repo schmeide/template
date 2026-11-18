@@ -42,8 +42,8 @@ crews on site for days or weeks do not fit it (see below).
 
 ## Links between them
 
-None of these is built yet. Each is a shape of its own that requires both sides, and each has an issue. Until they
-exist, staff carry the details across by hand.
+Each is a shape of its own that requires both sides, and each has an issue. Until one is built, staff carry the
+details across by hand. Built links are kept by this recipe.
 
 - **Estimate request to job** (`requests` and `deals`, schmeide/template#41): an approved estimate request becomes a
   job in the first stage, once, with its answers in the job's first note. Staff pick or create the customer, since a
@@ -59,10 +59,13 @@ exist, staff carry the details across by hand.
 - **Job to cost account** (`deals` and `stock`, schmeide/template#42): a job in a stage that closes as won
   (Contracted) opens one cost account named after it, once, enforced by unique ids on both sides of a link table and
   a lock on the job row. Moving the job on to In progress keeps the account and its entries.
-- **Inspections on a job** (`deals` and `requests`, schmeide/template#54): from a job, start a site inspection or a
-  punch list as a draft request linked to the job, through the `requests` service, and list the job's requests with
-  type and status. A request belongs to at most one job; a job has any number. The link never moves the job or
-  decides the request. This differs from schmeide/template#41, which makes a new job from one request.
+- **Inspections on a job**, built: [deal-requests](../shapes/deal-requests.md). "New checklist" on a job picks a
+  site inspection or a punch list and the person acting, makes a draft request through the `requests` service, links
+  it to the job and opens it to fill in. The job lists its requests with type, status and submitted date, and each
+  request links back to its job. A request belongs to at most one job; a job has any number. The link never moves
+  the job or decides the request, so a failed inspection leaves the job where it is. Rename "deal" to "job" in its
+  wording, as [its doc](../shapes/deal-requests.md#what-usually-varies) describes. This differs from
+  schmeide/template#41, which makes a new job from one request.
 
 ## Vocabulary and fields
 
