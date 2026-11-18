@@ -11,10 +11,15 @@ const subscribe = (onChange: () => void) => {
   window.addEventListener("hashchange", onChange);
   return () => window.removeEventListener("hashchange", onChange);
 };
-const currentPath = () => window.location.hash.replace(/^#\/?/, "").split("/")[0];
+const currentHash = () => window.location.hash;
+
+// The address split into parts: `#/invoices/7/edit` is ["invoices", "7", "edit"]. A page reads
+// the parts after its own path to show a sub-view.
+export const useHashPath = (): readonly string[] =>
+  useSyncExternalStore(subscribe, currentHash).replace(/^#\/?/, "").split("/");
 
 export function App({ pages }: { readonly pages: readonly Page[] }) {
-  const path = useSyncExternalStore(subscribe, currentPath);
+  const [path] = useHashPath();
   const page = pages.find((candidate) => candidate.path === path) ?? pages[0];
 
   return (

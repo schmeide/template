@@ -1,0 +1,76 @@
+.invoice-scroll {
+  overflow-x: auto;
+}
+
+.invoice-table {
+  border-collapse: collapse;
+  inline-size: 100%;
+}
+
+.invoice-table :is(th, td) {
+  padding: 6px 8px;
+  text-align: start;
+  vertical-align: top;
+  border-block-end: 1px solid #c8c8c8;
+}
+
+.invoice-table input {
+  inline-size: 100%;
+  min-inline-size: 6ch;
+  box-sizing: border-box;
+}
+
+.invoice-table .amount,
+.invoice-totals dd {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.invoice-totals dl {
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: end;
+  gap: 4px 24px;
+}
+
+.invoice-totals dd {
+  margin: 0;
+}
+
+.invoice-grand-total {
+  font-weight: 600;
+}
+
+.invoice-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px 32px;
+}
+
+.invoice-multiline {
+  white-space: pre-line;
+}
+
+.invoice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+@media print {
+  nav,
+  .invoice-no-print {
+    display: none !important;
+  }
+
+  .invoice-table :is(th, td) {
+    border-color: #000;
+  }
+
+  .invoice-table tr {
+    break-inside: avoid;
+  }
+}
