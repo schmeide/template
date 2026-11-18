@@ -7,6 +7,7 @@ import { Dashboard } from "./dashboard/Dashboard.tsx";
 import { Deals } from "./deals/Deals.tsx";
 import { Handbook } from "./handbook/Handbook.tsx";
 import { Invoices } from "./invoices/Invoices.tsx";
+import { Quotes } from "./invoices/Quotes.tsx";
 import { Notes } from "./notes/Notes.tsx";
 import { Orders } from "./orders/Orders.tsx";
 import { Shop } from "./orders/Shop.tsx";
@@ -23,6 +24,7 @@ export const pages: readonly Page[] = [
   { path: "deals", title: "Deals", Component: Deals },
   { path: "handbook", title: "Handbook", Component: Handbook },
   { path: "invoices", title: "Invoices", Component: Invoices },
+  { path: "quotes", title: "Quotes", Component: Quotes },
   { path: "notes", title: "Notes", Component: Notes },
   { path: "orders", title: "Orders", Component: Orders },
   { path: "shop", title: "Shop", Component: Shop },

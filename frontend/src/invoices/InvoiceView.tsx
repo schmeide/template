@@ -7,9 +7,11 @@ import {
   formatDate,
   formatQuantity,
   formatTaxRate,
+  kinds,
   localDay,
   methodLabels,
   statusLabels,
+  type Kind,
   type Outputs,
   type PaymentMethod,
 } from "./format.ts";
@@ -51,7 +53,13 @@ export function TotalsList({
 }
 
 // The document itself, as the customer sees it on screen, on paper and through the share link.
-function DocumentBody({ document }: { readonly document: Outputs["shared"] }) {
+function DocumentBody({
+  document,
+  kind,
+}: {
+  readonly document: Outputs["shared"];
+  readonly kind: Kind;
+}) {
   const money = (amount: number) => formatMoney(amount, document.currency);
   return (
     <article>
@@ -69,11 +77,13 @@ function DocumentBody({ document }: { readonly document: Outputs["shared"] }) {
           </h1>
           <p>Status: {statusLabels[document.status]}</p>
           <p>Issued {formatDate(document.issueDate)}</p>
-          <p>Due {formatDate(document.dueDate)}</p>
+          <p>
+            {kind.dueLabel} {formatDate(document.dueDate)}
+          </p>
         </div>
       </header>
       <section aria-labelledby="bill-to">
-        <h2 id="bill-to">Bill to</h2>
+        <h2 id="bill-to">{kind.recipientLabel}</h2>
         <p>{document.customer.name}</p>
         {document.customer.address && (
           <p className="invoice-multiline">{document.customer.address}</p>
@@ -214,7 +224,7 @@ function PaymentForm({ invoice }: { readonly invoice: Outputs["get"] }) {
   );
 }
 
-function ShareLink({ token }: { readonly token: string }) {
+function ShareLink({ token, kind }: { readonly token: string; readonly kind: Kind }) {
   const [message, setMessage] = useState("");
   // The Clipboard API exists only on https and localhost.
   const copy = () =>
@@ -224,7 +234,7 @@ function ShareLink({ token }: { readonly token: string }) {
           () => setMessage("Unable to copy. Select the link and copy it.")
         )
       : setMessage("Unable to copy here. Select the link and copy it.");
-  const url = `${window.location.origin}${window.location.pathname}#/invoices/share/${token}`;
+  const url = `${window.location.origin}${window.location.pathname}#/${kind.path}/share/${token}`;
   return (
     <div className="invoice-actions invoice-no-print">
       <label>
@@ -238,13 +248,19 @@ function ShareLink({ token }: { readonly token: string }) {
   );
 }
 
-export function InvoiceView({ id }: { readonly id: number }) {
-  const trpc = useTRPC();
+export function InvoiceView({
+  id,
+  kind = kinds.invoice,
+}: {
+  readonly id: number;
+  readonly kind?: Kind;
+}) {
+  const api = useTRPC()[kind.path];
   const queryClient = useQueryClient();
-  const invoice = useQuery(trpc.invoices.get.queryOptions({ id }));
+  const invoice = useQuery(api.get.queryOptions({ id }));
   const setStatus = useMutation(
-    trpc.invoices.setStatus.mutationOptions({
-      onSuccess: () => queryClient.invalidateQueries({ queryKey: trpc.invoices.pathKey() }),
+    api.setStatus.mutationOptions({
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: api.pathKey() }),
     })
   );
   const [confirmingVoid, setConfirmingVoid] = useState(false);
@@ -252,26 +268,29 @@ export function InvoiceView({ id }: { readonly id: number }) {
   if (invoice.error) {
     return (
       <main>
-        <p role="alert">Unable to load this invoice: {invoice.error.message}</p>
-        <a href="#/invoices">Back to invoices</a>
+        <p role="alert">
+          Unable to load this {kind.name}: {invoice.error.message}
+        </p>
+        <a href={`#/${kind.path}`}>Back to {kind.path}</a>
       </main>
     );
   }
   if (!invoice.data) {
     return (
       <main aria-busy="true">
-        <p>Loading invoice…</p>
+        <p>Loading {kind.name}…</p>
       </main>
     );
   }
   const { status, reference } = invoice.data;
-  const open = status === "sent" || status === "overdue";
+  const open = status === "sent" || status === "overdue" || status === "expired";
+  const decisions = kind.type === "quote" && open ? (["accepted", "declined"] as const) : [];
 
   return (
     <main>
       <div className="invoice-actions invoice-no-print">
-        <a href="#/invoices">Back to invoices</a>
-        {status === "draft" && <a href={`#/invoices/${id}/edit`}>Edit invoice</a>}
+        <a href={`#/${kind.path}`}>Back to {kind.path}</a>
+        {status === "draft" && <a href={`#/${kind.path}/${id}/edit`}>Edit {kind.name}</a>}
         {status === "draft" && (
           <button
             type="button"
@@ -281,9 +300,19 @@ export function InvoiceView({ id }: { readonly id: number }) {
             Mark as sent
           </button>
         )}
+        {decisions.map((to) => (
+          <button
+            key={to}
+            type="button"
+            disabled={setStatus.isPending}
+            onClick={() => setStatus.mutate({ id, status: to })}
+          >
+            Mark as {to}
+          </button>
+        ))}
         {(status === "draft" || open) && !confirmingVoid && (
           <button type="button" onClick={() => setConfirmingVoid(true)}>
-            Void invoice
+            Void {kind.name}
           </button>
         )}
         <button type="button" onClick={() => window.print()}>
@@ -292,7 +321,10 @@ export function InvoiceView({ id }: { readonly id: number }) {
       </div>
       {confirmingVoid && (
         <div className="invoice-actions invoice-no-print">
-          <p>Void {reference}? It can no longer be edited, sent or paid. This cannot be undone.</p>
+          <p>
+            Void {reference}? It can no longer be edited, sent or{" "}
+            {kind.type === "invoice" ? "paid" : "accepted"}. This cannot be undone.
+          </p>
           <button
             type="button"
             onClick={() =>
@@ -305,29 +337,36 @@ export function InvoiceView({ id }: { readonly id: number }) {
             Void {reference}
           </button>
           <button type="button" onClick={() => setConfirmingVoid(false)}>
-            Keep invoice
+            Keep {kind.name}
           </button>
         </div>
       )}
       {setStatus.error && (
-        <p role="alert">Unable to update the invoice: {setStatus.error.message}</p>
+        <p role="alert">
+          Unable to update the {kind.name}: {setStatus.error.message}
+        </p>
       )}
-      {status !== "draft" && <ShareLink token={invoice.data.shareToken} />}
-      <DocumentBody document={invoice.data} />
-      {open && <PaymentForm invoice={invoice.data} />}
+      {status !== "draft" && <ShareLink token={invoice.data.shareToken} kind={kind} />}
+      <DocumentBody document={invoice.data} kind={kind} />
+      {open && kind.type === "invoice" && <PaymentForm invoice={invoice.data} />}
     </main>
   );
 }
 
 // The public view behind a share link: the document and a print button, nothing else.
-export function SharedInvoice({ token }: { readonly token: string }) {
-  const trpc = useTRPC();
-  const invoice = useQuery(trpc.invoices.shared.queryOptions({ token }));
+export function SharedInvoice({
+  token,
+  kind = kinds.invoice,
+}: {
+  readonly token: string;
+  readonly kind?: Kind;
+}) {
+  const invoice = useQuery(useTRPC()[kind.path].shared.queryOptions({ token }));
 
   return (
     <main>
       {invoice.error && (
-        <p role="alert">This invoice link is not valid. Ask the sender for a new link.</p>
+        <p role="alert">This {kind.name} link is not valid. Ask the sender for a new link.</p>
       )}
       {invoice.data && (
         <>
@@ -336,7 +375,7 @@ export function SharedInvoice({ token }: { readonly token: string }) {
               Print
             </button>
           </div>
-          <DocumentBody document={invoice.data} />
+          <DocumentBody document={invoice.data} kind={kind} />
         </>
       )}
     </main>

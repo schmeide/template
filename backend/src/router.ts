@@ -5,6 +5,7 @@ import { dashboardRouter } from "./routers/dashboard.ts";
 import { dealsRouter } from "./routers/deals.ts";
 import { handbookRouter } from "./routers/handbook.ts";
 import { invoicesRouter } from "./routers/invoices.ts";
+import { quotesRouter } from "./routers/invoices.ts";
 import { notesRouter } from "./routers/notes.ts";
 import { ordersRouter } from "./routers/orders.ts";
 import { peopleRouter } from "./routers/people.ts";
@@ -21,6 +22,7 @@ export const appRouter = router({
   deals: dealsRouter,
   handbook: handbookRouter,
   invoices: invoicesRouter,
+  quotes: quotesRouter,
   notes: notesRouter,
   orders: ordersRouter,
   people: peopleRouter,

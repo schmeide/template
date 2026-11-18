@@ -2,7 +2,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { useState, type FormEvent } from "react";
 import { currencyDigits, formatScaled, parseScaled } from "../money/money.ts";
 import { useTRPC } from "../trpc.ts";
-import { localDay, type Outputs } from "./format.ts";
+import { kinds, localDay, type Kind, type Outputs } from "./format.ts";
 import { TotalsList } from "./InvoiceView.tsx";
 
 const focusOnMount = (element: HTMLElement | null) => element?.focus();
@@ -39,8 +39,9 @@ const move = <T,>(items: readonly T[], from: number, to: number): readonly T[] =
   return [...moved.slice(0, to), items[from], ...moved.slice(to)];
 };
 
-function EditorForm({ invoice }: { readonly invoice?: Outputs["get"] }) {
+function EditorForm({ kind, invoice }: { readonly kind: Kind; readonly invoice?: Outputs["get"] }) {
   const trpc = useTRPC();
+  const api = trpc[kind.path];
   const queryClient = useQueryClient();
   const customers = useQuery(trpc.customers.list.queryOptions());
   const [customerId, setCustomerId] = useState(invoice ? String(invoice.customerId) : "");
@@ -68,16 +69,16 @@ function EditorForm({ invoice }: { readonly invoice?: Outputs["get"] }) {
     return parsed ? [parsed] : [];
   });
   const totals = useQuery({
-    ...trpc.invoices.totals.queryOptions({ lines: amounts }),
+    ...api.totals.queryOptions({ lines: amounts }),
     placeholderData: keepPreviousData,
   });
 
   const onSaved = async (saved: { readonly id: number }) => {
-    await queryClient.invalidateQueries({ queryKey: trpc.invoices.pathKey() });
-    window.location.assign(`#/invoices/${saved.id}`);
+    await queryClient.invalidateQueries({ queryKey: api.pathKey() });
+    window.location.assign(`#/${kind.path}/${saved.id}`);
   };
-  const create = useMutation(trpc.invoices.create.mutationOptions({ onSuccess: onSaved }));
-  const update = useMutation(trpc.invoices.update.mutationOptions({ onSuccess: onSaved }));
+  const create = useMutation(api.create.mutationOptions({ onSuccess: onSaved }));
+  const update = useMutation(api.update.mutationOptions({ onSuccess: onSaved }));
   const save = invoice ? update : create;
 
   const setLine = (index: number, change: Partial<LineDraft>) =>
@@ -109,11 +110,11 @@ function EditorForm({ invoice }: { readonly invoice?: Outputs["get"] }) {
   return (
     <form onSubmit={onSubmit} aria-labelledby="editor-title">
       <h1 id="editor-title" ref={focusOnMount} tabIndex={-1}>
-        {invoice ? `Edit ${invoice.reference}` : "New invoice"}
+        {invoice ? `Edit ${invoice.reference}` : `New ${kind.name}`}
       </h1>
       {customers.data?.length === 0 && (
         <p>
-          An invoice needs a customer to bill. <a href="#/customers">Add a customer</a>
+          {kind.plural} need a customer. <a href="#/customers">Add a customer</a>
         </p>
       )}
       <div className="invoice-actions">
@@ -142,7 +143,7 @@ function EditorForm({ invoice }: { readonly invoice?: Outputs["get"] }) {
           />
         </label>
         <label>
-          Due date{" "}
+          {kind.dueDateLabel}{" "}
           <input
             type="date"
             required
@@ -269,38 +270,52 @@ function EditorForm({ invoice }: { readonly invoice?: Outputs["get"] }) {
         </label>
       </p>
       {error && <p role="alert">{error}</p>}
-      {save.error && <p role="alert">Unable to save the invoice: {save.error.message}</p>}
+      {save.error && (
+        <p role="alert">
+          Unable to save the {kind.name}: {save.error.message}
+        </p>
+      )}
       <div className="invoice-actions">
         <button type="submit" disabled={save.isPending}>
-          Save invoice
+          Save {kind.name}
         </button>
-        <a href={invoice ? `#/invoices/${invoice.id}` : "#/invoices"}>Cancel</a>
+        <a href={invoice ? `#/${kind.path}/${invoice.id}` : `#/${kind.path}`}>Cancel</a>
       </div>
     </form>
   );
 }
 
-export function InvoiceEditor({ id }: { readonly id?: number }) {
-  const trpc = useTRPC();
-  const invoice = useQuery({ ...trpc.invoices.get.queryOptions({ id: id ?? 0 }), enabled: !!id });
+export function InvoiceEditor({
+  id,
+  kind = kinds.invoice,
+}: {
+  readonly id?: number;
+  readonly kind?: Kind;
+}) {
+  const api = useTRPC()[kind.path];
+  const invoice = useQuery({ ...api.get.queryOptions({ id: id ?? 0 }), enabled: !!id });
 
   if (id === undefined) {
     return (
       <main>
-        <EditorForm />
+        <EditorForm kind={kind} />
       </main>
     );
   }
   return (
     <main>
-      {invoice.error && <p role="alert">Unable to load this invoice: {invoice.error.message}</p>}
-      {invoice.data && invoice.data.status !== "draft" && (
-        <p>
-          Only draft invoices can be edited.{" "}
-          <a href={`#/invoices/${id}`}>View {invoice.data.reference}</a>
+      {invoice.error && (
+        <p role="alert">
+          Unable to load this {kind.name}: {invoice.error.message}
         </p>
       )}
-      {invoice.data?.status === "draft" && <EditorForm invoice={invoice.data} />}
+      {invoice.data && invoice.data.status !== "draft" && (
+        <p>
+          Only draft {kind.path} can be edited.{" "}
+          <a href={`#/${kind.path}/${id}`}>View {invoice.data.reference}</a>
+        </p>
+      )}
+      {invoice.data?.status === "draft" && <EditorForm kind={kind} invoice={invoice.data} />}
     </main>
   );
 }

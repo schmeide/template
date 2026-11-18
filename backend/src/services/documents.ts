@@ -17,29 +17,36 @@ import {
 } from "../db/schema/documents.ts";
 import { lineAmounts, totals } from "./money.ts";
 
-type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
+export type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
 export type Document = typeof documents.$inferSelect;
-// Overdue is derived from the due date, never stored.
-export type DisplayStatus = DocumentStatus | "overdue";
+// Overdue (an invoice) and expired (a quote) are derived from the due date, never stored.
+export type DisplayStatus = DocumentStatus | "overdue" | "expired";
 export type DocumentFilter = { readonly status?: DisplayStatus; readonly search?: string };
 
-const prefixes: Readonly<Record<DocumentType, string>> = { invoice: "INV" };
+const prefixes: Readonly<Record<DocumentType, string>> = { invoice: "INV", quote: "Q" };
 
-const transitions: Readonly<Record<DocumentStatus, readonly DocumentStatus[]>> = {
-  draft: ["sent", "void"],
-  sent: ["paid", "void"],
-  paid: [],
-  void: [],
+const transitions: Readonly<
+  Record<DocumentType, Partial<Record<DocumentStatus, readonly DocumentStatus[]>>>
+> = {
+  invoice: { draft: ["sent", "void"], sent: ["paid", "void"] },
+  quote: { draft: ["sent", "void"], sent: ["accepted", "declined", "void"] },
 };
 
 // ponytail: "today" is the UTC date; take the business's time zone once a setting exists for it.
 export const currentDate = (): string => new Date().toISOString().slice(0, 10);
 
-const reference = (type: DocumentType, number: number) =>
+export const reference = (type: DocumentType, number: number) =>
   `${prefixes[type]}-${String(number).padStart(4, "0")}`;
 
-const displayStatus = (status: DocumentStatus, dueDate: string, today: string): DisplayStatus =>
-  status === "sent" && dueDate < today ? "overdue" : status;
+const displayStatus = (
+  type: DocumentType,
+  status: DocumentStatus,
+  dueDate: string,
+  today: string
+): DisplayStatus => {
+  if (status !== "sent" || dueDate >= today) return status;
+  return type === "quote" ? "expired" : "overdue";
+};
 
 const insertLines = async (tx: Tx, documentId: number, lines: readonly Line[]) => {
   if (lines.length === 0) return;
@@ -58,39 +65,46 @@ const paidByDocument = async (db: Db | Tx, ids: readonly number[]) => {
   return new Map(rows.map((row) => [row.documentId, row.paid]));
 };
 
+// Creates a document inside a transaction the caller holds, for a link that writes more with it.
+export const insertDocument = async (
+  tx: Tx,
+  type: DocumentType,
+  { lines, ...fields }: Readonly<DocumentInput>
+): Promise<Document> => {
+  // The upsert locks the counter row until commit, so concurrent creates queue for the next number.
+  const [{ lastNumber }] = await tx
+    .insert(documentCounters)
+    .values({ type, lastNumber: 1 })
+    .onConflictDoUpdate({
+      target: documentCounters.type,
+      set: { lastNumber: sql`${documentCounters.lastNumber} + 1` },
+    })
+    .returning();
+  const [document] = await tx
+    .insert(documents)
+    .values({ ...fields, type, number: lastNumber })
+    .returning();
+  await insertLines(tx, document.id, lines);
+  return document;
+};
+
 export const createDocument = (
   db: Db,
   type: DocumentType,
-  { lines, ...fields }: Readonly<DocumentInput>
-): Promise<Document> =>
-  db.transaction(async (tx) => {
-    // The upsert locks the counter row until commit, so concurrent creates queue for the next number.
-    const [{ lastNumber }] = await tx
-      .insert(documentCounters)
-      .values({ type, lastNumber: 1 })
-      .onConflictDoUpdate({
-        target: documentCounters.type,
-        set: { lastNumber: sql`${documentCounters.lastNumber} + 1` },
-      })
-      .returning();
-    const [document] = await tx
-      .insert(documents)
-      .values({ ...fields, type, number: lastNumber })
-      .returning();
-    await insertLines(tx, document.id, lines);
-    return document;
-  });
+  input: Readonly<DocumentInput>
+): Promise<Document> => db.transaction((tx) => insertDocument(tx, type, input));
 
 // Only drafts can be edited. Returns undefined when the document is missing or not a draft.
 export const updateDocument = (
   db: Db,
+  type: DocumentType,
   { id, lines, ...fields }: Readonly<DocumentUpdate>
 ): Promise<Document | undefined> =>
   db.transaction(async (tx) => {
     const [document] = await tx
       .update(documents)
       .set(fields)
-      .where(and(eq(documents.id, id), eq(documents.status, "draft")))
+      .where(and(eq(documents.id, id), eq(documents.type, type), eq(documents.status, "draft")))
       .returning();
     if (!document) return undefined;
     await tx.delete(documentLines).where(eq(documentLines.documentId, id));
@@ -101,26 +115,35 @@ export const updateDocument = (
 // Returns undefined when the document is missing or cannot move to `to` from where it is.
 export const setStatus = async (
   db: Db,
+  type: DocumentType,
   id: number,
   to: DocumentStatus
 ): Promise<Document | undefined> => {
-  const from = documentStatus.enumValues.filter((status) => transitions[status].includes(to));
+  const from = documentStatus.enumValues.filter((status) =>
+    transitions[type][status]?.includes(to)
+  );
   if (from.length === 0) return undefined;
   const [document] = await db
     .update(documents)
     .set({ status: to })
-    .where(and(eq(documents.id, id), inArray(documents.status, from)))
+    .where(and(eq(documents.id, id), eq(documents.type, type), inArray(documents.status, from)))
     .returning();
   return document;
 };
 
-// Records a payment on a sent document, up to its balance, and marks it paid once covered.
+// Records a payment on a sent invoice, up to its balance, and marks it paid once covered.
 export const recordPayment = (db: Db, input: Readonly<NewPayment>): Promise<Payment | undefined> =>
   db.transaction(async (tx) => {
     const [document] = await tx
       .select({ id: documents.id })
       .from(documents)
-      .where(and(eq(documents.id, input.documentId), eq(documents.status, "sent")))
+      .where(
+        and(
+          eq(documents.id, input.documentId),
+          eq(documents.type, "invoice"),
+          eq(documents.status, "sent")
+        )
+      )
       .for("update");
     if (!document) return undefined;
     const lines = await tx
@@ -159,7 +182,7 @@ const details = async (db: Db, where: SQL | undefined, today: string) => {
   const paid = paymentRows.reduce((sum, payment) => sum + payment.amount, 0);
   return {
     ...document,
-    status: displayStatus(document.status, document.dueDate, today),
+    status: displayStatus(document.type, document.status, document.dueDate, today),
     reference: reference(document.type, document.number),
     customer,
     lines: lines.map((line) => ({ ...line, amount: lineAmounts(line).net })),
@@ -170,14 +193,19 @@ const details = async (db: Db, where: SQL | undefined, today: string) => {
   };
 };
 
-export const getDocument = (db: Db, id: number, today = currentDate()) =>
-  details(db, eq(documents.id, id), today);
+export const getDocument = (db: Db, type: DocumentType, id: number, today = currentDate()) =>
+  details(db, and(eq(documents.id, id), eq(documents.type, type)), today);
 
 // The public view: only sent documents, and nothing that identifies rows or other links.
-export const getSharedDocument = async (db: Db, token: string, today = currentDate()) => {
+export const getSharedDocument = async (
+  db: Db,
+  type: DocumentType,
+  token: string,
+  today = currentDate()
+) => {
   const document = await details(
     db,
-    and(eq(documents.shareToken, token), ne(documents.status, "draft")),
+    and(eq(documents.shareToken, token), eq(documents.type, type), ne(documents.status, "draft")),
     today
   );
   if (!document) return undefined;
@@ -207,7 +235,8 @@ export const getSharedDocument = async (db: Db, token: string, today = currentDa
 };
 
 const statusCondition = (status: DisplayStatus, today: string) => {
-  if (status === "overdue") return and(eq(documents.status, "sent"), lt(documents.dueDate, today));
+  if (status === "overdue" || status === "expired")
+    return and(eq(documents.status, "sent"), lt(documents.dueDate, today));
   if (status === "sent") return and(eq(documents.status, "sent"), gte(documents.dueDate, today));
   return eq(documents.status, status);
 };
@@ -264,7 +293,7 @@ export const listDocuments = async (
     const { total } = totals(linesByDocument.get(row.id) ?? []);
     return {
       ...row,
-      status: displayStatus(row.status, row.dueDate, today),
+      status: displayStatus(row.type, row.status, row.dueDate, today),
       reference: reference(row.type, row.number),
       total,
       balance: total - (paid.get(row.id) ?? 0),
