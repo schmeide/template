@@ -1,5 +1,6 @@
 import type { Page, Slot } from "./App.tsx";
 import { Assets } from "./assets/Assets.tsx";
+import { AccountBilling } from "./billing/Billing.tsx";
 import { Bookings } from "./bookings/Bookings.tsx";
 import { BookOnline } from "./bookings/BookOnline.tsx";
 import { QuoteConversion } from "./conversions/Conversion.tsx";
@@ -48,6 +49,7 @@ export const slots: readonly Slot[] = [
   { slot: "deal", Component: DealVisits },
   { slot: "booking", Component: BookingDeal },
   { slot: "deal", Component: DealDocuments },
+  { slot: "account", Component: AccountBilling },
   { slot: "quote", Component: QuoteConversion },
   { slot: "invoice", Component: InvoiceSource },
   { slot: "request", Component: RequestDeal },

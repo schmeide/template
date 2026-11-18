@@ -49,8 +49,9 @@ same shape with a different unit, entry kinds and floor.
 - **The entry kinds** (`ledger_entry_kind`, and `kinds` in `frontend/src/stock/format.ts`): in, out and adjustment
   here; billable and non-billable for time.
 - **Whether a floor applies:** per item, from the item settings.
-- **Whether entries feed a document,** such as time and expenses onto an invoice. That is a link shape that requires
-  both and owns the code that turns entries into invoice lines.
+- **Whether entries feed a document,** such as time and expenses onto an invoice. That is the
+  [entries-invoice](entries-invoice.md) link shape, which requires this one and the invoices shape and owns the code
+  that turns entries into invoice lines.
 
 ## Turning stock into time tracking
 

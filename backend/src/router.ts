@@ -1,4 +1,5 @@
 import { assetsRouter } from "./routers/assets.ts";
+import { billingRouter } from "./routers/billing.ts";
 import { bookingsRouter } from "./routers/bookings.ts";
 import { conversionsRouter } from "./routers/conversions.ts";
 import { customersRouter } from "./routers/customers.ts";
@@ -28,6 +29,7 @@ export const appRouter = router({
   visits: visitsRouter,
   dealDocuments: dealDocumentsRouter,
   deals: dealsRouter,
+  billing: billingRouter,
   handbook: handbookRouter,
   invoices: invoicesRouter,
   quotes: quotesRouter,
