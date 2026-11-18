@@ -105,7 +105,9 @@ describe("Members", () => {
 
     expect(await screen.findByRole("heading", { name: "Ada" })).toBeVisible();
     expect(screen.getByText(/Due for renewal, Adult, until Dec 31, 2030/)).toBeVisible();
-    expect(screen.getByRole("table", { name: "Periods" })).toHaveTextContent(/\$50\.00/);
+    expect(screen.getByRole("list", { name: "Periods" })).toHaveTextContent(
+      "Adult, Jan 1, 2030 to Dec 31, 2030, $50.00"
+    );
     await waitFor(() => expect(screen.getByLabelText("Level")).toHaveValue("1"));
     await user.click(screen.getByRole("button", { name: "Renew" }));
 

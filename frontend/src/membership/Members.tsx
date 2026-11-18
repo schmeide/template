@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { inferRouterOutputs } from "@trpc/server";
 import { useState, type FormEvent } from "react";
 import type { AppRouter } from "../../../backend/src/router.ts";
-import { useHashPath } from "../App.tsx";
+import { Slots, useHashPath } from "../App.tsx";
 import { currencyDigits, formatMoney, formatScaled, parseScaled } from "../money/money.ts";
 import { useTRPC } from "../trpc.ts";
 import "./membership.css";
@@ -355,30 +355,16 @@ function MemberDetail({ customerId }: { readonly customerId: number }) {
             . <a href={`#/customers/${customerId}`}>Contact details</a>
           </p>
           <h2 id="membership-periods">Periods</h2>
-          <div className="membership-scroll">
-            <table className="membership-table" aria-labelledby="membership-periods">
-              <thead>
-                <tr>
-                  <th scope="col">Level</th>
-                  <th scope="col">From</th>
-                  <th scope="col">To</th>
-                  <th scope="col" className="amount">
-                    Fee
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.periods.map((period) => (
-                  <tr key={period.id}>
-                    <td>{period.levelName}</td>
-                    <td>{formatDate(period.startsOn)}</td>
-                    <td>{period.endsOn === null ? "For life" : formatDate(period.endsOn)}</td>
-                    <td className="amount">{formatMoney(period.fee, currency)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <ol aria-labelledby="membership-periods" className="membership-periods">
+            {data.periods.map((period) => (
+              <li key={period.id}>
+                {period.levelName}, {formatDate(period.startsOn)}
+                {period.endsOn === null ? " for life" : ` to ${formatDate(period.endsOn)}`},{" "}
+                {formatMoney(period.fee, currency)}
+                <Slots name="period" id={period.id} />
+              </li>
+            ))}
+          </ol>
           {latest.endsOn !== null && levels.data && (
             <form
               key={latest.id}

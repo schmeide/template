@@ -16,6 +16,8 @@ Season tickets, subscriptions and annual passes are the same shape with differen
   status. "Add a member" joins a customer who has no period. A customer without a period (a donor, someone who
   signed up for one event) is not a member and is not listed.
 - **A member** (`#/members/<customer id>`): their periods, latest first, and "Renew".
+- **Slot**: each period renders `<Slots name="period" id={period.id} />`, where link shapes add their views.
+  [membership-dues](membership-dues.md) adds "Bill dues" and the dues state there. With none kept it renders nothing.
 
 ## Status is not stored
 
@@ -47,8 +49,8 @@ finds a newer period than it saw and adds nothing; staff reload to see it. The d
 
 ## Limits
 
-- Billing the fee for a period is a link to `invoices` of its own (schmeide/template#61); without it, staff make the
-  invoice by hand.
+- Billing the fee for a period is the [membership-dues](membership-dues.md) link; without it, staff make the invoice
+  by hand.
 - A period cannot be edited or removed, and there is no way to end a life membership early.
 - A start date past the 28th rolls over a short month for monthly levels (Jan 31 plus a month ends Mar 2).
 - No renewal reminders are sent; that needs email and a job runner.

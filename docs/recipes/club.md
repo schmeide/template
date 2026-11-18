@@ -53,6 +53,12 @@ The ones not built yet each have an issue. Until they exist, staff carry the det
   creates a new person; staff use "Change customer" on the booking page to move the sign-up onto the existing member,
   as [Changing a booking's customer](../shapes/bookings.md#changing-a-bookings-customer) describes. The extra
   record stays. Matching sign-ups to members by email waits for sign-in or email confirmation.
+- **Dues for a period** ([membership-dues](../shapes/membership-dues.md), `membership` and `invoices`): "Bill dues"
+  on a member's period makes a draft dues invoice for the member, one line with the level and the period's dates at
+  the fee copied onto the period, and each period shows its dues as unbilled, billed or paid. A period is on at most
+  one invoice that is not void, under a lock on the period row; voiding the invoice frees it to be billed again. A
+  period with no fee is never billed, and paying changes nothing on the membership, whose status still comes from the
+  dates.
 - **Donation to member**: none needed. A donation is a document addressed to the member or donor.
 
 ## Membership
@@ -62,8 +68,7 @@ year a member pays for, with current, due for renewal and lapsed worked out from
 length. "Renew" on a member adds the next period, from the day after the current one ends, or from today once it has
 lapsed.
 
-Billing a period's dues onto an invoice is a link not built yet (schmeide/template#61). Until then, renewing is: add
-the period, then make a dues invoice by hand at the fee the period shows.
+Renewing is then: add the period, and press "Bill dues" on it (see Dues for a period, above).
 
 ## Vocabulary and fields
 

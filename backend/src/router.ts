@@ -9,6 +9,7 @@ import { dealDocumentsRouter } from "./routers/dealDocuments.ts";
 import { dealRequestsRouter } from "./routers/dealRequests.ts";
 import { dealsRouter } from "./routers/deals.ts";
 import { directoryRouter } from "./routers/directory.ts";
+import { duesRouter } from "./routers/dues.ts";
 import { handbookRouter } from "./routers/handbook.ts";
 import { intakesRouter } from "./routers/intakes.ts";
 import { invoicesRouter } from "./routers/invoices.ts";
@@ -49,6 +50,7 @@ export const appRouter = router({
   rentCharges: rentChargesRouter,
   leases: leasesRouter,
   leave: leaveRouter,
+  dues: duesRouter,
   membership: membershipRouter,
   notes: notesRouter,
   orderInvoices: orderInvoicesRouter,
