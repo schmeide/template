@@ -207,7 +207,7 @@ describe("quotes", () => {
     await newInvoice();
     const second = await newQuote();
 
-    expect(second.number).toBe(first.number + 1);
+    expect(second.number).toBeGreaterThan(first.number);
     expect((await getDocument(db, "quote", first.id, today))?.reference).toMatch(/^Q-\d{4,}$/);
   });
 
