@@ -18,6 +18,8 @@ document expiry tracker are the same shape with different names and fields.
   building block, which this shape requires; see `docs/shapes/files.md` for the types and the 10 MiB cap.
 - **Expiring** (`#/assets/expiring`): assets whose date has passed or falls within the next 30, 60 or 90 days.
 - **Import** (`#/assets/import`): a CSV file, previewed, then imported.
+- **Slot**: the asset page renders `<Slots name="asset" id={id} />` below its files, where link shapes add their views.
+  With no link shape kept it renders nothing.
 
 ## The rules
 

@@ -1,0 +1,20 @@
+{
+  "requires": ["requests", "assets"],
+  "files": [
+    "backend/src/db/schema/requestUnits.ts",
+    "backend/src/services/requestUnits.ts",
+    "backend/src/services/__tests__/requestUnits.test.ts",
+    "backend/src/routers/requestUnits.ts",
+    "backend/src/routers/__tests__/requestUnits.test.ts",
+    "frontend/src/requestUnits/",
+    "docs/shapes/request-unit.md"
+  ],
+  "routers": [
+    { "key": "requestUnits", "name": "requestUnitsRouter", "from": "./routers/requestUnits.ts" }
+  ],
+  "pages": [],
+  "slots": [
+    { "slot": "request", "name": "RequestUnit", "from": "./requestUnits/RequestUnits.tsx" },
+    { "slot": "asset", "name": "UnitRequests", "from": "./requestUnits/RequestUnits.tsx" }
+  ]
+}

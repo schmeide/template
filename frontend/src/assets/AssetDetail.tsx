@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Slots } from "../App.tsx";
 import { useTRPC } from "../trpc.ts";
 import { AssetForm } from "./AssetForm.tsx";
 import { Attachments } from "./Attachments.tsx";
@@ -77,6 +78,7 @@ export function AssetDetail({ id }: { readonly id: number }) {
             <p role="status">{update.isSuccess ? "Saved" : ""}</p>
           </AssetForm>
           <Attachments id={id} />
+          <Slots name="asset" id={id} />
         </>
       )}
     </main>

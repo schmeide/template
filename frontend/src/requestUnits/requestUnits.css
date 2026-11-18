@@ -1,0 +1,34 @@
+.request-unit-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px 12px;
+}
+
+.request-unit-hint {
+  margin-block: 4px 0;
+  color: #555;
+}
+
+.request-unit-matches {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.request-unit-scroll {
+  overflow-x: auto;
+}
+
+.request-unit-table {
+  border-collapse: collapse;
+  inline-size: 100%;
+}
+
+.request-unit-table :is(th, td) {
+  padding: 6px 8px;
+  text-align: start;
+  vertical-align: top;
+  border-block-end: 1px solid #c8c8c8;
+}

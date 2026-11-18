@@ -23,6 +23,7 @@ import { peopleRouter } from "./routers/people.ts";
 import { rentChargesRouter } from "./routers/rentCharges.ts";
 import { requestDealsRouter } from "./routers/requestDeals.ts";
 import { requestsRouter } from "./routers/requests.ts";
+import { requestUnitsRouter } from "./routers/requestUnits.ts";
 import { stockRouter } from "./routers/stock.ts";
 import { visitsRouter } from "./routers/visits.ts";
 import { router } from "./trpc.ts";
@@ -54,6 +55,7 @@ export const appRouter = router({
   people: peopleRouter,
   conversions: conversionsRouter,
   requestDeals: requestDealsRouter,
+  requestUnits: requestUnitsRouter,
   requests: requestsRouter,
   stock: stockRouter,
 });

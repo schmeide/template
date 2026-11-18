@@ -35,6 +35,8 @@ import { InvoiceRent } from "./rentCharges/RentCharges.tsx";
 import { RequestDeal } from "./requestDeals/RequestDeal.tsx";
 import { DealSource } from "./requestDeals/RequestDeal.tsx";
 import { Requests } from "./requests/Requests.tsx";
+import { RequestUnit } from "./requestUnits/RequestUnits.tsx";
+import { UnitRequests } from "./requestUnits/RequestUnits.tsx";
 import { Stock } from "./stock/Stock.tsx";
 import { DealVisits } from "./visits/Visits.tsx";
 import { BookingDeal } from "./visits/Visits.tsx";
@@ -84,4 +86,6 @@ export const slots: readonly Slot[] = [
   { slot: "invoice", Component: InvoiceSource },
   { slot: "request", Component: RequestDeal },
   { slot: "deal", Component: DealSource },
+  { slot: "request", Component: RequestUnit },
+  { slot: "asset", Component: UnitRequests },
 ];
