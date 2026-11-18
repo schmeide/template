@@ -1,15 +1,18 @@
 {
-  "requires": ["csv"],
+  "requires": ["csv", "files"],
   "files": [
     "backend/src/db/schema/registry.ts",
     "backend/src/services/registry.ts",
     "backend/src/services/__tests__/registry.test.ts",
     "backend/src/routers/assets.ts",
     "backend/src/routers/__tests__/assets.test.ts",
+    "backend/src/routes/assets.ts",
+    "backend/src/routes/__tests__/assets.test.ts",
     "frontend/src/assets/",
     "docs/shapes/assets.md"
   ],
   "routers": [{ "key": "assets", "name": "assetsRouter", "from": "./routers/assets.ts" }],
+  "routes": [{ "name": "assetsRoutes", "from": "./routes/assets.ts" }],
   "pages": [
     { "path": "assets", "title": "Assets", "name": "Assets", "from": "./assets/Assets.tsx" }
   ]

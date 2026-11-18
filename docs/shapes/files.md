@@ -1,7 +1,7 @@
 # Files
 
 File upload and download, for shapes that keep files with their records. It has a table but no page and no router:
-nobody keeps it on its own, and `make shape/keep` refuses to. It comes with the shapes that require it.
+nobody keeps it on its own, and `make shape/keep` refuses to. It comes with the shapes that require it (`assets`).
 
 ## What it has
 
@@ -40,6 +40,8 @@ nobody keeps it on its own, and `make shape/keep` refuses to. It comes with the 
    the shape's manifest (then `make shape/registries`). Its download route reads the file through the link table and
    calls `sendFile`.
 4. Use `uploadFile` in the page, and an ordinary link to the download route.
+
+The `assets` shape does all four for its attachments.
 
 ## Limits
 

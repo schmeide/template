@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AssetDetail } from "../AssetDetail.tsx";
 import { NewAsset } from "../NewAsset.tsx";
@@ -40,6 +40,7 @@ describe("AssetDetail", () => {
   it("saves changes to an asset", async () => {
     const calls = renderWithBackend(<AssetDetail id={1} />, {
       "assets.categories": () => categories,
+      "assets.files": () => [],
       "assets.get": () => asset(1, "Laptop", { owner: "Ana", expiresOn: "2027-05-01" }),
       "assets.update": () => asset(1, "Laptop"),
     });
@@ -51,7 +52,8 @@ describe("AssetDetail", () => {
     await user.clear(screen.getByLabelText("Expires"));
     await user.click(screen.getByRole("button", { name: "Save asset" }));
 
-    expect(await screen.findByRole("status")).toHaveTextContent("Saved");
+    const form = screen.getByRole("form", { name: "Asset details" });
+    expect(await within(form).findByRole("status")).toHaveTextContent("Saved");
     expect(calls).toContainEqual({
       path: "assets.update",
       input: {
@@ -70,6 +72,7 @@ describe("AssetDetail", () => {
   it("archives an asset and restores an archived one", async () => {
     const calls = renderWithBackend(<AssetDetail id={1} />, {
       "assets.categories": () => categories,
+      "assets.files": () => [],
       "assets.get": () => asset(1, "Van", { archivedAt: new Date("2026-03-01T10:00:00Z") }),
       "assets.restore": () => asset(1, "Van"),
     });
@@ -84,6 +87,7 @@ describe("AssetDetail", () => {
   it("archives an asset without asking, since it can be restored", async () => {
     const calls = renderWithBackend(<AssetDetail id={1} />, {
       "assets.categories": () => categories,
+      "assets.files": () => [],
       "assets.get": () => asset(1, "Van"),
       "assets.archive": () => asset(1, "Van", { archivedAt: new Date() }),
     });

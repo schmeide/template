@@ -12,6 +12,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
+import { files } from "./files.ts";
 
 // Archiving is separate (archived_at), so a restored record keeps the status it had.
 export const recordStatus = pgEnum("registry_status", [
@@ -31,8 +32,6 @@ export const registryCategories = pgTable(
   (table) => [uniqueIndex("registry_categories_name_key").on(sql`lower(${table.name})`)]
 );
 
-// ponytail: no attachments. They wait for the shared file upload building block, which needs
-// storage and an upload path (schmeide/template#34); add a registry_attachments table then.
 export const registryRecords = pgTable(
   "registry_records",
   {
@@ -59,6 +58,23 @@ export const registryRecords = pgTable(
     index().on(table.status),
   ]
 );
+
+// Files attached to a record. A file is served only through this link, and removing one deletes
+// the file, which removes the link. Archiving a record leaves its files in place.
+export const registryAttachments = pgTable(
+  "registry_attachments",
+  {
+    fileId: integer("file_id")
+      .primaryKey()
+      .references(() => files.id, { onDelete: "cascade" }),
+    recordId: integer("record_id")
+      .notNull()
+      .references(() => registryRecords.id),
+  },
+  (table) => [index().on(table.recordId)]
+);
+
+export const fileIdSchema = createSelectSchema(registryAttachments).pick({ fileId: true });
 
 export const newCategorySchema = createInsertSchema(registryCategories, {
   name: (schema) => schema.trim().min(1),
