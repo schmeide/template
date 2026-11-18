@@ -1,0 +1,20 @@
+{
+  "requires": ["orders", "invoices"],
+  "files": [
+    "backend/src/db/schema/orderInvoices.ts",
+    "backend/src/services/orderInvoices.ts",
+    "backend/src/services/__tests__/orderInvoices.test.ts",
+    "backend/src/routers/orderInvoices.ts",
+    "backend/src/routers/__tests__/orderInvoices.test.ts",
+    "frontend/src/orderInvoices/",
+    "docs/shapes/order-invoice.md"
+  ],
+  "routers": [
+    { "key": "orderInvoices", "name": "orderInvoicesRouter", "from": "./routers/orderInvoices.ts" }
+  ],
+  "pages": [],
+  "slots": [
+    { "slot": "order", "name": "OrderInvoice", "from": "./orderInvoices/OrderInvoice.tsx" },
+    { "slot": "invoice", "name": "InvoiceOrder", "from": "./orderInvoices/OrderInvoice.tsx" }
+  ]
+}

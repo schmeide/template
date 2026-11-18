@@ -22,6 +22,8 @@ import { Quotes } from "./invoices/Quotes.tsx";
 import { RequestLeave } from "./leave/Leave.tsx";
 import { AccountLeave } from "./leave/Leave.tsx";
 import { Notes } from "./notes/Notes.tsx";
+import { OrderInvoice } from "./orderInvoices/OrderInvoice.tsx";
+import { InvoiceOrder } from "./orderInvoices/OrderInvoice.tsx";
 import { Orders } from "./orders/Orders.tsx";
 import { Shop } from "./orders/Shop.tsx";
 import { ProductStock } from "./orderStock/OrderStock.tsx";
@@ -66,6 +68,8 @@ export const slots: readonly Slot[] = [
   { slot: "account", Component: AccountBilling },
   { slot: "request", Component: RequestLeave },
   { slot: "account", Component: AccountLeave },
+  { slot: "order", Component: OrderInvoice },
+  { slot: "invoice", Component: InvoiceOrder },
   { slot: "product", Component: ProductStock },
   { slot: "order-fulfillment", Component: OrderFulfillment },
   { slot: "quote", Component: QuoteConversion },

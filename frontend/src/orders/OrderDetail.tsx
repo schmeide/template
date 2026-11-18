@@ -110,6 +110,7 @@ export function OrderDetail({ id }: { readonly id: number }) {
           : ""}
       </p>
       {move.error && <p role="alert">Unable to change the status: {move.error.message}</p>}
+      <Slots name="order" id={id} />
 
       <h2>Customer</h2>
       <dl className="order-customer">

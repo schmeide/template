@@ -36,8 +36,7 @@ comes right after `invoices`, the first shape that requires it.
 
 ## Links between them
 
-Each link is a shape of its own that requires both sides. Order to stock is built and kept; order to invoice is not
-built yet and has an issue. Until it exists, staff type a wholesale order onto an invoice by hand.
+Each link is a shape of its own that requires both sides, and the recipe keeps both.
 
 - **Order to stock**, from [order-stock](../shapes/order-stock.md): on each product's page in Orders → Products, staff
   list the stock items it uses and how many (one row with quantity 1 for a stocked product; none for a product that
@@ -45,10 +44,11 @@ built yet and has an issue. Until it exists, staff type a wholesale order onto a
   fulfills the order, all at once, and only once. If any item would go below its floor, nothing is written, the order
   stays `ready` and the message names the item. An order cannot be cancelled once fulfilled, so there is nothing to
   reverse; a return is an "in" entry recorded by hand.
-- **Order to invoice** (`orders` and `invoices`, schmeide/template#64): on a fulfilled order, staff pick or create the
-  customer (prefilled by matching the order's email), and the link makes a draft invoice with one line per order line
-  (name, count times 1000 as the quantity, unit price and tax rate). An order has at most one invoice that is not
-  void, enforced by a lock on the order row; voiding the invoice frees the order.
+- **Order to invoice**, from [order-invoice](../shapes/order-invoice.md): on a fulfilled order, staff pick the
+  wholesale customer (the one with the order's email is chosen for them to check) or make a new one from the order's
+  details, and "Make invoice" creates a draft invoice with one line per order line (name, count, unit price and tax
+  rate), which totals what the order did. The order and the invoice link to each other. An order has at most one
+  invoice that is not void; voiding the invoice frees the order to be invoiced again.
 
 ## Vocabulary and fields
 

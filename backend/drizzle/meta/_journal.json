@@ -169,6 +169,13 @@
       "when": 1795050778689,
       "tag": "0023_create_order_stock",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1795050877186,
+      "tag": "0024_create_order_invoices",
+      "breakpoints": true
     }
   ]
 }
