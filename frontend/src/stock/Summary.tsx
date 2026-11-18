@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { downloadCsv } from "../csv/download.ts";
 import { useTRPC } from "../trpc.ts";
 import { focusOnMount, formatQuantity, kinds, localDay, type SummaryRow } from "./format.ts";
 
@@ -19,15 +20,6 @@ const byItem = (rows: readonly SummaryRow[]): readonly ItemTotals[] =>
       : [...items, { accountId: row.accountId, name: row.name, unit: row.unit, byKind: [row] }];
   }, []);
 
-const download = (csv: string, name: string) => {
-  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = name;
-  link.click();
-  URL.revokeObjectURL(url);
-};
-
 // Totals by item and kind for a period, both days included, and the entries as CSV.
 export function Summary() {
   const trpc = useTRPC();
@@ -41,7 +33,7 @@ export function Summary() {
   });
   const exportCsv = useMutation({
     mutationFn: () => queryClient.fetchQuery(trpc.stock.exportCsv.queryOptions({ from, to })),
-    onSuccess: (csv) => download(csv, `stock-${from}-to-${to}.csv`),
+    onSuccess: (csv) => downloadCsv(csv, `stock-${from}-to-${to}.csv`),
   });
   const items = byItem(summary.data ?? []);
 

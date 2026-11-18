@@ -1,11 +1,9 @@
 {
-  "requires": [],
+  "requires": ["csv"],
   "files": [
     "backend/src/db/schema/ledger.ts",
     "backend/src/services/ledger.ts",
-    "backend/src/services/csv.ts",
     "backend/src/services/__tests__/ledger.test.ts",
-    "backend/src/services/__tests__/csv.test.ts",
     "backend/src/routers/stock.ts",
     "backend/src/routers/__tests__/stock.test.ts",
     "frontend/src/stock/",

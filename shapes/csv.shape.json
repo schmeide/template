@@ -1,0 +1,11 @@
+{
+  "requires": [],
+  "files": [
+    "backend/src/services/csv.ts",
+    "backend/src/services/__tests__/csv.test.ts",
+    "frontend/src/csv/",
+    "docs/shapes/csv.md"
+  ],
+  "routers": [],
+  "pages": []
+}

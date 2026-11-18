@@ -43,8 +43,9 @@ hand: change the manifest and run `make shape/registries`. `make shape/check` fa
 The platform copies the template, runs `make shape/keep NAMES="..."`, and commits. The first name is the home page;
 menu order follows the order given, with required shapes after the ones that need them.
 
-A project with no fitting shape keeps `notes`, the sample, as before. At least one shape must be kept: a backend with
-no tables has no migrations to run.
+A project with no fitting shape keeps `notes`, the sample, as before. At least one shape with a page must be kept: a
+frontend with no pages has nothing to show, and a backend with no tables has no migrations to run. A shape with no
+page (a building block such as `csv`) is never kept alone; `shape/keep` refuses and names the shapes that require it.
 
 Adding a shape to a project that already holds data is out of scope: `shape/keep` runs once, on a fresh copy.
 
@@ -66,6 +67,10 @@ Code that more than one shape needs (money, line items, PDF, email, file upload)
 table: a shape of its own that the others require. Do not create one ahead of need. The first shape to need something
 owns it; when a second shape needs it, move it into its own shape in that change. That keeps the "no abstraction with a
 single implementation" rule.
+
+A building block usually has no page and often no tables. `make shape/list` leaves such shapes out, so `shape/check`
+does not run one alone; it is checked with every shape that requires it. `csv` (owned by `stock` until `assets` also
+needed it) is the first.
 
 ### How a shape becomes a named app
 

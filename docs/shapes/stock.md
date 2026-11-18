@@ -36,9 +36,8 @@ same shape with a different unit, entry kinds and floor.
   transaction that first locks the item's row, then sums and inserts, so two withdrawals that each fit alone but not
   together queue, and the second is refused. A refusal reaches the browser as a `CONFLICT` with the reason.
 - **Dates** are calendar days (`YYYY-MM-DD`), not instants. A period includes both its first and last day.
-- **CSV.** `backend/src/services/csv.ts` writes RFC 4180 CSV with CRLF line ends, quotes any cell holding a comma,
-  quote or line break, and puts an apostrophe before text starting with `=`, `+`, `-`, `@`, tab or carriage return so
-  a spreadsheet does not run it as a formula. Numbers, negative ones included, are written as they are.
+- **CSV.** The download goes through the `csv` shape's writer (`docs/shapes/csv.md`), which quotes cells as needed
+  and defuses text a spreadsheet would run as a formula.
 
 ## What usually varies
 

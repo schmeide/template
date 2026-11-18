@@ -1,3 +1,4 @@
+import { assetsRouter } from "./routers/assets.ts";
 import { bookingsRouter } from "./routers/bookings.ts";
 import { customersRouter } from "./routers/customers.ts";
 import { dealsRouter } from "./routers/deals.ts";
@@ -9,6 +10,7 @@ import { router } from "./trpc.ts";
 
 // One sub-router per feature.
 export const appRouter = router({
+  assets: assetsRouter,
   bookings: bookingsRouter,
   customers: customersRouter,
   deals: dealsRouter,
