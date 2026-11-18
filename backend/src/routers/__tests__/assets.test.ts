@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { TRPCError } from "@trpc/server";
 import { afterAll, describe, expect, it } from "vitest";
 import { createDb } from "../../db/client.ts";
+import { attachFile } from "../../services/registry.ts";
 import { importLimits } from "../../db/schema/registry.ts";
 import { appRouter } from "../../router.ts";
 
@@ -57,5 +58,20 @@ describe("assets router", () => {
     await expect(
       caller.assets.previewImport({ csv: "x".repeat(importLimits.characters + 1) })
     ).rejects.toMatchObject(code("BAD_REQUEST"));
+  });
+
+  it("lists an asset's files and removes one", async () => {
+    const asset = await caller.assets.create({ name: randomUUID() });
+    const bytes = new Uint8Array([1]);
+    await attachFile(db, asset.id, { name: "a.txt", type: "text/plain", bytes });
+
+    const [file] = await caller.assets.files({ id: asset.id });
+    expect(file).toMatchObject({ name: "a.txt", size: 1 });
+    await caller.assets.removeFile({ fileId: file.id });
+
+    expect(await caller.assets.files({ id: asset.id })).toEqual([]);
+    await expect(caller.assets.removeFile({ fileId: file.id })).rejects.toMatchObject(
+      code("NOT_FOUND")
+    );
   });
 });

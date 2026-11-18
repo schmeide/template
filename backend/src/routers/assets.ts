@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import {
+  fileIdSchema,
   filterSchema,
   idSchema,
   importSchema,
@@ -15,9 +16,11 @@ import {
   createRecord,
   exportRecords,
   getRecord,
+  listAttachments,
   listCategories,
   listRecords,
   previewImport,
+  removeAttachment,
   restoreRecord,
   updateRecord,
 } from "../services/registry.ts";
@@ -58,6 +61,13 @@ export const assetsRouter = router({
   restore: procedure
     .input(idSchema)
     .mutation(async ({ ctx, input }) => found(await restoreRecord(ctx.db, input.id))),
+  // Upload and download are plain HTTP routes, in backend/src/routes/assets.ts.
+  files: procedure.input(idSchema).query(({ ctx, input }) => listAttachments(ctx.db, input.id)),
+  removeFile: procedure.input(fileIdSchema).mutation(async ({ ctx, input }) => {
+    if (!(await removeAttachment(ctx.db, input.fileId))) {
+      throw new TRPCError({ code: "NOT_FOUND", message: "No asset has that file" });
+    }
+  }),
   exportCsv: procedure.input(filterSchema).query(({ ctx, input }) => exportRecords(ctx.db, input)),
   // Mutations, so the file travels in a POST body rather than the address.
   previewImport: procedure

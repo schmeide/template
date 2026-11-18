@@ -3,8 +3,13 @@ import { afterAll, describe, expect, it } from "vitest";
 import { createDb } from "../../db/client.ts";
 import type { NewRecord } from "../../db/schema/registry.ts";
 import { parseCsv } from "../csv.ts";
+import { saveFile } from "../files.ts";
 import {
   archiveRecord,
+  attachFile,
+  getAttachment,
+  listAttachments,
+  removeAttachment,
   commitImport,
   createCategory,
   createRecord,
@@ -223,5 +228,53 @@ describe("registry service", () => {
         messages: ["A file can hold at most 5000 rows. Split it and import each part."],
       },
     ]);
+  });
+});
+
+describe("registry attachments", () => {
+  const pdf = (name: string) => ({
+    name,
+    type: "application/pdf",
+    bytes: new Uint8Array([37, 80, 68, 70]),
+  });
+
+  it("attaches, lists, reads and removes a record's files, and keeps them when archived", async () => {
+    const asset = await record((await newCategory()).id, "Van");
+
+    const receipt = await attachFile(db, asset.id, pdf("receipt.pdf"));
+    const manual = await attachFile(db, asset.id, pdf("manual.pdf"));
+    if (!receipt || !("file" in receipt) || !manual || !("file" in manual)) {
+      throw new Error("The files were not attached");
+    }
+
+    expect(await listAttachments(db, asset.id)).toEqual([receipt.file, manual.file]);
+    expect(receipt.file).toMatchObject({ name: "receipt.pdf", type: "application/pdf", size: 4 });
+    await archiveRecord(db, asset.id);
+    expect(await listAttachments(db, asset.id)).toHaveLength(2);
+    const read = await getAttachment(db, receipt.file.id);
+    expect(read).toMatchObject({ name: "receipt.pdf", type: "application/pdf" });
+    expect(new Uint8Array(read?.bytes ?? [])).toEqual(pdf("").bytes);
+
+    expect(await removeAttachment(db, receipt.file.id)).toBe(true);
+    expect(await removeAttachment(db, receipt.file.id)).toBe(false);
+    expect(await getAttachment(db, receipt.file.id)).toBeUndefined();
+    expect(await listAttachments(db, asset.id)).toEqual([manual.file]);
+  });
+
+  it("refuses a file over a limit, and a record that does not exist", async () => {
+    const asset = await record((await newCategory()).id, "Van");
+
+    expect(await attachFile(db, asset.id, { ...pdf("page.html"), type: "text/html" })).toEqual({
+      problem: "Choose a PDF, JPEG, PNG, WebP, HEIC, text, CSV, Word or Excel file.",
+    });
+    expect(await attachFile(db, -1, pdf("receipt.pdf"))).toBeUndefined();
+    expect(await listAttachments(db, asset.id)).toEqual([]);
+  });
+
+  it("serves and removes only files attached to a record", async () => {
+    const loose = await saveFile(db, pdf("loose.pdf"));
+
+    expect(await getAttachment(db, loose.id)).toBeUndefined();
+    expect(await removeAttachment(db, loose.id)).toBe(false);
   });
 });

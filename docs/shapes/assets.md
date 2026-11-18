@@ -13,6 +13,9 @@ document expiry tracker are the same shape with different names and fields.
   with Computers, Phones, Furniture, Vehicles and Tools, added the first time the list is read, because a migration
   cannot seed rows (a project's migrations are regenerated). Names are unique ignoring case.
 - **Asset page** (`#/assets/<id>`, and `#/assets/new` to add one): every field, editable, and archive or restore.
+- **Files** (`registry_attachments`, on the asset page): receipts, manuals and photos attached to an asset, each a
+  download link with its size and a remove button, and a picker that adds one. The bytes are kept by the `files`
+  building block, which this shape requires; see `docs/shapes/files.md` for the types and the 10 MiB cap.
 - **Expiring** (`#/assets/expiring`): assets whose date has passed or falls within the next 30, 60 or 90 days.
 - **Import** (`#/assets/import`): a CSV file, previewed, then imported.
 
@@ -20,7 +23,12 @@ document expiry tracker are the same shape with different names and fields.
 
 - **Archive, not delete.** Archiving sets `archived_at`; the asset leaves the list and the expiring view, and
   shows under the "Archived" status filter. Restoring clears it, and the asset keeps the status it had. The service
-  has no delete.
+  has no delete for assets. An archived asset keeps its files, and files can still be added to it.
+- **Files.** Upload is `POST /api/assets/<id>/files?name=<name>` with the file as the body and its type as the
+  content type; download is `GET /api/assets/files/<file id>`. Both are plain HTTP routes in
+  `backend/src/routes/assets.ts`, because tRPC takes only JSON; listing and removing are `assets.files` and
+  `assets.removeFile`. A download is served only while an asset has the file, so a file that was removed, or one
+  another shape stored, answers 404. Removing asks first and deletes the file for good.
 - **Search** matches name, tag, owner and notes, ignoring case, anywhere in the text. `%` and `_` are matched as
   themselves.
 - **Paging** orders by the chosen sort, then by id, so assets with equal names or dates keep their order from page
@@ -83,7 +91,9 @@ reference, not a category.
 - **Paging** uses an offset, which reads every skipped row. That is fine for hundreds of pages; switch to keyset
   paging (after the last row's sort value and id) if people page that deep.
 - **Owner** is free text, because without sign-in there is no users table to point at.
-- **Attachments** are not built. They wait for the shared file upload building block (schmeide/template#34),
-  which needs storage and an upload path.
+- **Files** are kept in Postgres; see the limits in `docs/shapes/files.md`. They are not part of the CSV import or
+  export.
+- **CSV import** still sends the file's text through tRPC, capped at 300,000 characters. Sending it as an upload
+  instead would lift that cap; it has not been done.
 - Categories cannot be renamed or deleted.
 - Export builds the whole file in memory, which suits tens of thousands of rows.

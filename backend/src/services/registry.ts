@@ -6,6 +6,7 @@ import {
   eq,
   getTableColumns,
   ilike,
+  inArray,
   isNotNull,
   isNull,
   lte,
@@ -13,10 +14,12 @@ import {
   sql,
 } from "drizzle-orm";
 import type { Db } from "../db/client.ts";
+import { fileColumns, files, type StoredFile, type Upload } from "../db/schema/files.ts";
 import {
   importLimits,
   newRecordSchema,
   recordStatus,
+  registryAttachments,
   registryCategories,
   registryRecords,
   type Category,
@@ -27,6 +30,7 @@ import {
   type RegistryRecord,
 } from "../db/schema/registry.ts";
 import { CsvError, parseCsv, toCsv } from "./csv.ts";
+import { fileProblem, saveFile } from "./files.ts";
 
 // A new register starts with these. Edit for the project.
 const defaultCategories = ["Computers", "Phones", "Furniture", "Vehicles", "Tools"];
@@ -60,6 +64,63 @@ export const createCategory = async (
 export const createRecord = async (db: Db, input: Readonly<NewRecord>): Promise<RegistryRecord> => {
   const [record] = await db.insert(registryRecords).values(input).returning();
   return record;
+};
+
+// A record's files, oldest first, without their bytes.
+export const listAttachments = (db: Db, recordId: number): Promise<readonly StoredFile[]> =>
+  db
+    .select(fileColumns)
+    .from(registryAttachments)
+    .innerJoin(files, eq(registryAttachments.fileId, files.id))
+    .where(eq(registryAttachments.recordId, recordId))
+    .orderBy(asc(files.createdAt), asc(files.id));
+
+// Stores a file and links it to the record in one transaction. A problem with the file is returned
+// in words to show; undefined means there is no such record. An archived record takes files too.
+export const attachFile = async (
+  db: Db,
+  recordId: number,
+  upload: Readonly<Upload>
+): Promise<{ readonly file: StoredFile } | { readonly problem: string } | undefined> => {
+  const problem = fileProblem(upload);
+  if (problem) return { problem };
+  return db.transaction(async (tx) => {
+    const [record] = await tx
+      .select({ id: registryRecords.id })
+      .from(registryRecords)
+      .where(eq(registryRecords.id, recordId));
+    if (!record) return undefined;
+    const file = await saveFile(tx, upload);
+    await tx.insert(registryAttachments).values({ fileId: file.id, recordId });
+    return { file };
+  });
+};
+
+// A file with its bytes, only when it is attached to a record.
+export const getAttachment = async (db: Db, fileId: number) => {
+  const [file] = await db
+    .select({ name: files.name, type: files.type, bytes: files.bytes })
+    .from(registryAttachments)
+    .innerJoin(files, eq(registryAttachments.fileId, files.id))
+    .where(eq(registryAttachments.fileId, fileId));
+  return file;
+};
+
+// Deletes an attached file; the link goes with it. False when no record has that file.
+export const removeAttachment = async (db: Db, fileId: number): Promise<boolean> => {
+  const removed = await db
+    .delete(files)
+    .where(
+      inArray(
+        files.id,
+        db
+          .select({ id: registryAttachments.fileId })
+          .from(registryAttachments)
+          .where(eq(registryAttachments.fileId, fileId))
+      )
+    )
+    .returning({ id: files.id });
+  return removed.length > 0;
 };
 
 // A record with its category's name.

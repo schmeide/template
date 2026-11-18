@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "../trpc.ts";
 import { AssetForm } from "./AssetForm.tsx";
+import { Attachments } from "./Attachments.tsx";
 import { focusOnMount, statusLabel } from "./format.ts";
 
 const formatInstant = (instant: Date) =>
   new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(instant);
 
-// One asset: its fields to edit, and archive or restore. Nothing is deleted.
+// One asset: its fields to edit, its files, and archive or restore. Only a file is deleted.
 export function AssetDetail({ id }: { readonly id: number }) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -75,6 +76,7 @@ export function AssetDetail({ id }: { readonly id: number }) {
             {update.error && <p role="alert">Unable to save: {update.error.message}</p>}
             <p role="status">{update.isSuccess ? "Saved" : ""}</p>
           </AssetForm>
+          <Attachments id={id} />
         </>
       )}
     </main>
