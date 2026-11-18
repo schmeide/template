@@ -1,6 +1,6 @@
 ##@ Shapes (template only: shape/keep removes them)
 
-REGISTRIES := backend/src/router.ts frontend/src/pages.ts
+REGISTRIES := backend/src/router.ts backend/src/routes.ts frontend/src/pages.ts
 
 .PHONY: shape/list
 shape/list: node_modules ## List the shapes that can be kept alone (building blocks with no page are left out)
@@ -11,7 +11,7 @@ shape/recipes: node_modules ## List the recipes for trade-specific apps and the 
 	node shapes/shape.ts recipes
 
 .PHONY: shape/registries
-shape/registries: node_modules ## Rewrite the router and pages registries from the shape manifests
+shape/registries: node_modules ## Rewrite the router, routes and pages registries from the shape manifests
 	node shapes/shape.ts registries
 	$(JS_EXEC) exec prettier -- --write $(REGISTRIES) >/dev/null
 
