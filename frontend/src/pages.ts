@@ -13,6 +13,7 @@ import { DealDocuments } from "./dealDocuments/DealDocuments.tsx";
 import { DealRequests } from "./dealRequests/DealRequests.tsx";
 import { RequestDealLink } from "./dealRequests/DealRequests.tsx";
 import { Deals } from "./deals/Deals.tsx";
+import { Directory } from "./directory/Directory.tsx";
 import { Handbook } from "./handbook/Handbook.tsx";
 import { CustomerIntakes } from "./intakes/CustomerIntakes.tsx";
 import { Intake } from "./intakes/Intake.tsx";
@@ -37,6 +38,7 @@ export const pages: readonly Page[] = [
   { path: "customers", title: "Customers", Component: Customers },
   { path: "dashboard", title: "Dashboard", Component: Dashboard },
   { path: "deals", title: "Deals", Component: Deals },
+  { path: "directory", title: "Staff", Component: Directory },
   { path: "handbook", title: "Handbook", Component: Handbook },
   { path: "invoices", title: "Invoices", Component: Invoices },
   { path: "quotes", title: "Quotes", Component: Quotes },

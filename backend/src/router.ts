@@ -8,6 +8,7 @@ import { dealAccountsRouter } from "./routers/dealAccounts.ts";
 import { dealDocumentsRouter } from "./routers/dealDocuments.ts";
 import { dealRequestsRouter } from "./routers/dealRequests.ts";
 import { dealsRouter } from "./routers/deals.ts";
+import { directoryRouter } from "./routers/directory.ts";
 import { handbookRouter } from "./routers/handbook.ts";
 import { intakesRouter } from "./routers/intakes.ts";
 import { invoicesRouter } from "./routers/invoices.ts";
@@ -33,6 +34,7 @@ export const appRouter = router({
   dealDocuments: dealDocumentsRouter,
   dealRequests: dealRequestsRouter,
   deals: dealsRouter,
+  directory: directoryRouter,
   billing: billingRouter,
   handbook: handbookRouter,
   invoices: invoicesRouter,

@@ -2,7 +2,7 @@
 
 The names people pick to say who they are, for shapes that record who did something. It has a table and a router
 but no page: nobody keeps it on its own, and `make shape/keep` refuses to. It comes with the shapes that require it
-(`requests` and `handbook`).
+(`requests`, `handbook` and `directory`, the staff directory built on it).
 
 ## What it has
 
