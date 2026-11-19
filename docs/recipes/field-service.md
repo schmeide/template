@@ -43,6 +43,9 @@ Each link is a shape of its own that requires both sides. All of them are built 
 - **Callout request to job**, built: [request-deal](../shapes/request-deal.md). "Make deal" on an approved callout
   makes a job in the first stage, once, with its contact and answers in the job's first note. Staff pick or create the
   customer, since a public request carries only a free-text contact. Rename "Make deal" to "Make job" with the rest.
+- **Checklists on a job**, built: [deal-requests](../shapes/deal-requests.md). "New checklist" on a job starts a job
+  checklist as a draft request, filed by the person acting, and lists the job's checklists with their status. A
+  checklist belongs to at most one job. The link never moves the job, so a failed check is a person's call.
 
 ## Vocabulary and fields
 

@@ -10,6 +10,8 @@ import { Dashboard } from "./dashboard/Dashboard.tsx";
 import { DealAccount } from "./dealAccounts/DealAccount.tsx";
 import { AccountDeal } from "./dealAccounts/DealAccount.tsx";
 import { DealDocuments } from "./dealDocuments/DealDocuments.tsx";
+import { DealRequests } from "./dealRequests/DealRequests.tsx";
+import { RequestDealLink } from "./dealRequests/DealRequests.tsx";
 import { Deals } from "./deals/Deals.tsx";
 import { Handbook } from "./handbook/Handbook.tsx";
 import { CustomerIntakes } from "./intakes/CustomerIntakes.tsx";
@@ -53,6 +55,8 @@ export const slots: readonly Slot[] = [
   { slot: "deal", Component: DealVisits },
   { slot: "booking", Component: BookingDeal },
   { slot: "deal", Component: DealDocuments },
+  { slot: "deal", Component: DealRequests },
+  { slot: "request", Component: RequestDealLink },
   { slot: "account", Component: AccountBilling },
   { slot: "quote", Component: QuoteConversion },
   { slot: "invoice", Component: InvoiceSource },

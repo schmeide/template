@@ -8,6 +8,7 @@
     "quote-invoice",
     "deal-documents",
     "deal-bookings",
-    "request-deal"
+    "request-deal",
+    "deal-requests"
   ]
 }

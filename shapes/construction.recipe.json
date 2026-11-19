@@ -1,1 +1,4 @@
-{ "title": "Construction or trades", "shapes": ["deals", "invoices", "stock", "requests"] }
+{
+  "title": "Construction or trades",
+  "shapes": ["deals", "invoices", "stock", "requests", "deal-requests"]
+}
