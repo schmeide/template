@@ -20,6 +20,7 @@ donations are the same shape with different names, fields and statuses.
 - **Slots**, where link shapes add their views (`<Slots>` from `frontend/src/App.tsx`); with no link kept they render
   nothing or the page's own control:
   - `product`, below the form on a product's edit page;
+  - `order`, below the status and actions on an order's page;
   - `order-fulfillment`, in place of the "Mark fulfilled" button on a `ready` order, which it renders when no view
     fills the slot.
 
@@ -63,6 +64,9 @@ donations are the same shape with different names, fields and statuses.
   check or show stock.
 - Customers. Details live on the order so the shop needs no other shape. When `customers` is kept too, a link shape
   can add `customer_id` to `catalog_orders` and match or create the customer by email on checkout.
+- Whether orders are invoiced, for customers billed on account. That is the [order-invoice](order-invoice.md) link
+  shape, which requires this one and `invoices`: on a fulfilled order, staff pick or create the customer and it makes
+  a draft invoice with the order's lines.
 
 ## Turning it into a menu ordering app
 

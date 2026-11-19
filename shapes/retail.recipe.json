@@ -1,4 +1,4 @@
 {
   "title": "Retail or wholesale",
-  "shapes": ["orders", "stock", "invoices", "dashboard", "order-stock"]
+  "shapes": ["orders", "stock", "invoices", "dashboard", "order-stock", "order-invoice"]
 }
