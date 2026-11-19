@@ -38,18 +38,17 @@ tenant's record is a change to `invoices` (see below).
 
 ## Links between them
 
-Each link is a shape of its own. [Leases](../shapes/leases.md) joins units and tenants and is built (above), and so is
-the rent link. The request link is not built yet and has an issue; until it exists, staff name the unit in the
-request's answers.
+Each link is a shape of its own, and all are built. [Leases](../shapes/leases.md) joins units and tenants (above).
 
 - **Lease to rent invoices**, [lease-rent](../shapes/lease-rent.md) (`leases` and `invoices`): Bill rent (`#/rent`)
   makes a draft invoice for each rent period due up to a day, one per lease and period, for the tenant at the lease's
   rent and due on the period's first day. Monthly periods keep the lease's day of the month, clamped to the month's
   end. Voiding the invoice frees the period to be billed again. The lease page lists its rent invoices, and each
   invoice names its lease and period. Prorate a short last period by editing the draft.
-- **Maintenance request to unit** (`requests` and `assets`, schmeide/template#60): staff choose the unit a request is
-  about, and the unit lists its requests as its maintenance history. A request has at most one unit. The public form
-  stays as it is and shows nothing about units.
+- **Maintenance request to unit**, [request-unit](../shapes/request-unit.md) (`requests` and `assets`): staff choose
+  the unit a request is about, searched by name or tag among the units that are not archived, and the unit's page
+  lists its requests as its maintenance history. A request has at most one unit. The public form stays as it is and
+  shows nothing about units: the tenant gives the address, and staff choose the unit when they review the request.
 
 ## Vocabulary and fields
 
