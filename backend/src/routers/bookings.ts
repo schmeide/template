@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { createSelectSchema } from "drizzle-zod";
 import {
+  changeCustomerSchema,
   moveBookingSchema,
   newBookingSchema,
   newExceptionSchema,
@@ -21,6 +22,7 @@ import {
   addRule,
   bookPublicly,
   cancelSeries,
+  changeCustomer,
   createBooking,
   createResource,
   createSeries,
@@ -151,6 +153,16 @@ export const bookingsRouter = router({
     .mutation(async ({ ctx, input }) =>
       found(await cancelSeries(ctx.db, input.id), "No booking that is still open has that id")
     ),
+  changeCustomer: procedure.input(changeCustomerSchema).mutation(async ({ ctx, input }) => {
+    const booking = await changeCustomer(ctx.db, input);
+    if (!booking) {
+      throw new TRPCError({
+        code: "CONFLICT",
+        message: "Someone changed this booking's customer meanwhile. Reload it and pick again.",
+      });
+    }
+    return booking;
+  }),
   setStatus: procedure
     .input(statusSchema)
     .mutation(async ({ ctx, input }) =>

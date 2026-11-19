@@ -114,16 +114,35 @@ describe("BookingDetail", () => {
     );
   });
 
-  it("offers no changes to a cancelled booking", async () => {
-    renderWithBackend(<BookingDetail id={7} />, {
+  it("offers only a change of customer on a cancelled booking", async () => {
+    const calls = renderWithBackend(<BookingDetail id={7} />, {
       "bookings.get": () => detail("cancelled"),
       "bookings.resources": () => resources(),
+      "customers.list": () => [
+        detail().customer,
+        { ...detail().customer, id: 9, name: "Ada Lovelace", email: "ada@club.example" },
+      ],
+      "bookings.changeCustomer": () => ({ ...detail("cancelled"), customerId: 9 }),
     });
+    const user = userEvent.setup();
 
     expect(
       await screen.findByText("This booking is cancelled and its time is free for others.")
     ).toBeVisible();
     expect(screen.queryByRole("button", { name: "Move booking" })).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Status")).not.toBeInTheDocument();
+    // The booking's own customer is not offered.
+    const customer = screen.getByLabelText("Customer");
+    await screen.findByRole("option", { name: "Ada Lovelace, ada@club.example" });
+    expect(screen.queryByRole("option", { name: "Ada, ada@example.com" })).not.toBeInTheDocument();
+    await user.selectOptions(customer, "Ada Lovelace, ada@club.example");
+    await user.click(screen.getByRole("button", { name: "Change customer" }));
+
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Customer changed"));
+    expect(calls.find((call) => call.path === "bookings.changeCustomer")?.input).toEqual({
+      id: 7,
+      fromCustomerId: 4,
+      customerId: 9,
+    });
   });
 });

@@ -9,6 +9,7 @@ import {
   addRule,
   bookPublicly,
   cancelSeries,
+  changeCustomer,
   createBooking,
   createResource,
   createSeries,
@@ -529,6 +530,67 @@ describe("scheduler service", () => {
     });
     expect(blocked).toEqual({ booked: [], unfree: ["2030-02-04"] });
     expect((await getBooking(db, second.id))?.startsAt).toEqual(at("2030-01-28T16:00:00Z"));
+  });
+
+  it("moves a booking onto another customer, cancelled ones too, and keeps the rest", async () => {
+    const resource = await openMondays();
+    const service = await newService();
+    const startsAt = at("2030-01-14T15:00:00Z");
+    const booked = await bookPublicly(db, {
+      serviceId: service.id,
+      resourceId: resource.id,
+      startsAt,
+      name: randomUUID(),
+      email: "a@example.com",
+    });
+    const before = await getBooking(db, booked?.id ?? -1);
+    const member = await newCustomer();
+    if (!before) throw new Error("not booked");
+    await setStatus(db, { id: before.id, status: "cancelled" });
+
+    const moved = await changeCustomer(db, {
+      id: before.id,
+      fromCustomerId: before.customerId,
+      customerId: member.id,
+    });
+
+    expect(moved).toMatchObject({
+      customerId: member.id,
+      status: "cancelled",
+      startsAt,
+      resourceId: resource.id,
+      seat: before.seat,
+    });
+    // The customer the public page made stays.
+    expect((await listCustomers(db)).map((customer) => customer.id)).toContain(before.customerId);
+    expect(
+      await changeCustomer(db, { id: before.id, fromCustomerId: member.id, customerId: -1 })
+    ).toBeUndefined();
+    expect(
+      await changeCustomer(db, { id: -1, fromCustomerId: member.id, customerId: member.id })
+    ).toBeUndefined();
+  });
+
+  it("lets the second of two people moving a booking at once see the first one's choice", async () => {
+    const resource = await openMondays();
+    const service = await newService();
+    const booking = await book(service.id, resource.id, at("2030-01-14T15:00:00Z"));
+    if (!booking) throw new Error("not booked");
+    const [first, second] = [await newCustomer(), await newCustomer()];
+
+    const results = await Promise.all(
+      [first, second].map((customer) =>
+        changeCustomer(db, {
+          id: booking.id,
+          fromCustomerId: booking.customerId,
+          customerId: customer.id,
+        })
+      )
+    );
+
+    const moved = results.filter((result) => result !== undefined);
+    expect(moved).toHaveLength(1);
+    expect((await getBooking(db, booking.id))?.customerId).toBe(moved[0]?.customerId);
   });
 
   it("keeps weekly hours and exceptions per resource", async () => {

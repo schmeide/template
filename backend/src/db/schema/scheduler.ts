@@ -237,6 +237,12 @@ export const moveBookingSchema = createSelectSchema(schedulerBookings).pick({
 
 export const statusSchema = createSelectSchema(schedulerBookings).pick({ id: true, status: true });
 
+// Moves a booking onto another customer. `fromCustomerId` is the customer staff saw, so a change
+// someone else made meanwhile is not silently replaced.
+export const changeCustomerSchema = createSelectSchema(schedulerBookings)
+  .pick({ id: true, customerId: true })
+  .extend({ fromCustomerId: createSelectSchema(schedulerBookings).shape.customerId });
+
 export type Resource = typeof schedulerResources.$inferSelect;
 export type Service = typeof schedulerServices.$inferSelect;
 export type Rule = typeof schedulerAvailability.$inferSelect;
@@ -254,3 +260,4 @@ export type NewBooking = z.input<typeof newBookingSchema>;
 export type NewSeries = z.input<typeof newSeriesSchema>;
 export type PublicBooking = z.input<typeof publicBookingSchema>;
 export type MoveBooking = z.input<typeof moveBookingSchema>;
+export type ChangeCustomer = z.input<typeof changeCustomerSchema>;

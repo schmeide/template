@@ -30,6 +30,17 @@ equipment and room rental, and reservations are the same shape with different na
 - **Public page** (`#/book`): a customer picks a service and a free time and gives a name, email and optional phone.
   It calls only `services`, `resources`, `slots` and `book`, which return nothing about other customers. Each public
   booking creates a customer.
+- **Change customer** (the booking page): staff move a booking onto an existing customer, such as the regular a public
+  booking was really for. The time, seat and status stay, and a cancelled booking can be moved too, so its history
+  sits with the right person. The customer the public page made stays, since customers are never deleted.
+
+## Changing a booking's customer
+
+Bookings are never matched to customers by the typed email: until sign-in or email confirmation exists, anyone could
+attach bookings to someone by typing their address. Staff decide instead, with `changeCustomer`, a staff procedure the
+public page does not call. It sends the customer the booking was on when staff opened it, and runs in one transaction
+that locks the booking row. Of two people changing it at once, the second waits, finds it already moved, and is told
+to reload and pick again rather than silently replacing the first one's choice.
 
 ## Slots and time
 
