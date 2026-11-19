@@ -1,4 +1,4 @@
 {
   "title": "Club or nonprofit",
-  "shapes": ["membership", "customers", "bookings", "invoices", "requests"]
+  "shapes": ["membership", "customers", "bookings", "invoices", "requests", "membership-dues"]
 }

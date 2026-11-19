@@ -1,0 +1,18 @@
+{
+  "requires": ["membership", "invoices"],
+  "files": [
+    "backend/src/db/schema/dues.ts",
+    "backend/src/services/dues.ts",
+    "backend/src/services/__tests__/dues.test.ts",
+    "backend/src/routers/dues.ts",
+    "backend/src/routers/__tests__/dues.test.ts",
+    "frontend/src/dues/",
+    "docs/shapes/membership-dues.md"
+  ],
+  "routers": [{ "key": "dues", "name": "duesRouter", "from": "./routers/dues.ts" }],
+  "pages": [],
+  "slots": [
+    { "slot": "period", "name": "PeriodDues", "from": "./dues/Dues.tsx" },
+    { "slot": "invoice", "name": "InvoicePeriod", "from": "./dues/Dues.tsx" }
+  ]
+}

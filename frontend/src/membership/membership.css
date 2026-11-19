@@ -14,10 +14,15 @@
   border-block-end: 1px solid #c8c8c8;
 }
 
-.membership-table .amount {
-  text-align: end;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+.membership-periods {
+  display: grid;
+  gap: 8px;
+  padding-inline-start: 0;
+  list-style: none;
+}
+
+.membership-periods > li > * {
+  margin-block: 4px 0;
 }
 
 .membership-form {

@@ -14,6 +14,8 @@ import { DealRequests } from "./dealRequests/DealRequests.tsx";
 import { RequestDealLink } from "./dealRequests/DealRequests.tsx";
 import { Deals } from "./deals/Deals.tsx";
 import { Directory } from "./directory/Directory.tsx";
+import { PeriodDues } from "./dues/Dues.tsx";
+import { InvoicePeriod } from "./dues/Dues.tsx";
 import { Handbook } from "./handbook/Handbook.tsx";
 import { CustomerIntakes } from "./intakes/CustomerIntakes.tsx";
 import { Intake } from "./intakes/Intake.tsx";
@@ -80,6 +82,8 @@ export const slots: readonly Slot[] = [
   { slot: "invoice", Component: InvoiceRent },
   { slot: "request", Component: RequestLeave },
   { slot: "account", Component: AccountLeave },
+  { slot: "period", Component: PeriodDues },
+  { slot: "invoice", Component: InvoicePeriod },
   { slot: "order", Component: OrderInvoice },
   { slot: "invoice", Component: InvoiceOrder },
   { slot: "product", Component: ProductStock },
