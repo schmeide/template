@@ -43,12 +43,11 @@ exists, the orders shape becomes the way to give online (see below).
 
 ## Links between them
 
-The ones not built yet each have an issue. Until they exist, staff carry the details across by hand.
-
-- **Membership application to member** (`requests` and `customers`, schmeide/template#62): an approved application
-  becomes a member, once, enforced by a unique request id in a link table and a lock on the request row. Staff check
-  the details filled from the answers named Name, Email, Phone and Address, or pick an existing member; the typed
-  email is never matched on its own.
+- **Membership application to person** ([request-customer](../shapes/request-customer.md), `requests` and
+  `customers`): "Add to customers" on an approved application offers a new person filled from the answers named Name,
+  Email, Phone and Address, for staff to check and save, or a pick of an existing person; the typed email is never
+  matched on its own. A request links once, under a lock on the request row and backed by its unique id in the link
+  table, and the person's page lists their requests. Then join them on the Members page.
 - **Event sign-up to member**: built into `bookings`, which already requires `customers`. Every public sign-up
   creates a new person; staff use "Change customer" on the booking page to move the sign-up onto the existing member,
   as [Changing a booking's customer](../shapes/bookings.md#changing-a-bookings-customer) describes. The extra
