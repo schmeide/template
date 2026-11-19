@@ -12,6 +12,10 @@ The menu follows this order; `customers` comes last, right after the first shape
   record is a unit: the name is its address ("Flat 2, 14 Mill Road"), the tag is your reference for it, and the
   category is the building or property it is in. The owner is the landlord, for an agent who manages for others. The
   expiry date becomes the next safety check due (gas, electrical or fire), so Expiring lists the checks to book.
+- **Leases**, from [leases](../shapes/leases.md), the core of the app. A lease lets one unit to one tenant from a
+  first day to a last day (none for a rolling lease), with rent per month or per week and a deposit. Two leases for
+  one unit never overlap. Leases are ended or cancelled, never deleted, and Vacant lists the units with no lease
+  running today. Joint tenants go in the lease's notes.
 - **Maintenance**, from [requests](../shapes/requests.md). Follow
   [Turning leave requests into another app](../shapes/requests.md#turning-leave-requests-into-another-app) with two
   types: "Maintenance request" (address, problem, urgency as a choice of emergency, urgent or routine, and when the
@@ -33,15 +37,10 @@ tenant's record is a change to `invoices` (see below).
 
 ## Links between them
 
-None of these is built yet. Each is a shape of its own, and each has an issue. Until they exist, staff carry the
-details across by hand: the lease lives in the unit's notes, rent invoices are made by hand each month, and the unit
-is named in the request's answers.
+Each link is a shape of its own. [Leases](../shapes/leases.md) joins units and tenants and is built (above). The two
+below are not built yet, and each has an issue. Until they exist, staff carry the details across by hand: rent
+invoices are made by hand each month, and the unit is named in the request's answers.
 
-- **Lease** (`assets` and `customers`, schmeide/template#57): the core of the app. A lease lets one unit to one tenant
-  from a first day to a last day (none for a rolling lease), with rent per month or per week and a deposit. Two
-  leases for one unit never overlap, enforced by locking the unit's row while the dates are checked and written,
-  since an exclusion constraint needs an extension a generated migration cannot create. Leases are ended or
-  cancelled, never deleted. Its page also lists the units with no current lease.
 - **Lease to rent invoices** (the lease shape and `invoices`, schmeide/template#59): "Bill rent up to a date" makes a
   draft invoice for each rent period due, one per lease and period, enforced by a unique lease and period in a link
   table and a lock on the lease row. Monthly periods keep the lease's day of the month, clamped to the month's end.

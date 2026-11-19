@@ -19,6 +19,7 @@ import { CustomerIntakes } from "./intakes/CustomerIntakes.tsx";
 import { Intake } from "./intakes/Intake.tsx";
 import { Invoices } from "./invoices/Invoices.tsx";
 import { Quotes } from "./invoices/Quotes.tsx";
+import { Leases } from "./leases/Leases.tsx";
 import { RequestLeave } from "./leave/Leave.tsx";
 import { AccountLeave } from "./leave/Leave.tsx";
 import { Notes } from "./notes/Notes.tsx";
@@ -48,6 +49,7 @@ export const pages: readonly Page[] = [
   { path: "handbook", title: "Handbook", Component: Handbook },
   { path: "invoices", title: "Invoices", Component: Invoices },
   { path: "quotes", title: "Quotes", Component: Quotes },
+  { path: "leases", title: "Leases", Component: Leases },
   { path: "notes", title: "Notes", Component: Notes },
   { path: "orders", title: "Orders", Component: Orders },
   { path: "shop", title: "Shop", Component: Shop },

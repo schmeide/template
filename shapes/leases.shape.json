@@ -1,0 +1,16 @@
+{
+  "requires": ["assets", "customers", "money"],
+  "files": [
+    "backend/src/db/schema/leases.ts",
+    "backend/src/services/leases.ts",
+    "backend/src/services/__tests__/leases.test.ts",
+    "backend/src/routers/leases.ts",
+    "backend/src/routers/__tests__/leases.test.ts",
+    "frontend/src/leases/",
+    "docs/shapes/leases.md"
+  ],
+  "routers": [{ "key": "leases", "name": "leasesRouter", "from": "./routers/leases.ts" }],
+  "pages": [
+    { "path": "leases", "title": "Leases", "name": "Leases", "from": "./leases/Leases.tsx" }
+  ]
+}

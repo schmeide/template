@@ -1,1 +1,1 @@
-{ "title": "Property management", "shapes": ["assets", "requests", "invoices"] }
+{ "title": "Property management", "shapes": ["assets", "leases", "requests", "invoices"] }
