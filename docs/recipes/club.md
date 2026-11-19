@@ -6,12 +6,15 @@ and donations, and forms for joining and for expense claims. Made with `make sha
 
 ## Shapes and the app each becomes
 
-The menu follows this order: Members (the home page), Events, Sign up, Dues and Forms, renamed as below, with
+The menu follows this order: Members (the home page), People, Events, Sign up, Dues and Forms, renamed as below, with
 Donations after Dues once it is added.
 
-- **Members**, the home page, from [customers](../shapes/customers.md): rename it as
-  [What usually varies](../shapes/customers.md#what-usually-varies) describes, and add the membership fields below.
-  Donors and people who sign up for an event live here too, with no membership level.
+- **Members**, the home page, from [membership](../shapes/membership.md): set up the club's levels (Adult, Junior,
+  Family, Life) on the page, then join each member at their level. Status (current, due for renewal, lapsed) comes
+  from their periods' dates; see [Membership](#membership) below.
+- **People**, from [customers](../shapes/customers.md): everyone the club knows, members or not. Rename the page as
+  [What usually varies](../shapes/customers.md#what-usually-varies) describes. Donors and people who sign up for an
+  event live here too, with no membership period.
 - **Events and Sign up**, from [bookings](../shapes/bookings.md). Follow
   [Turning bookings into class registration](../shapes/bookings.md#turning-bookings-into-class-registration): a
   resource is a venue (the clubhouse, a pitch, the hall), a service is an event or a regular session with its length
@@ -47,25 +50,24 @@ The ones not built yet each have an issue. Until they exist, staff carry the det
   the details filled from the answers named Name, Email, Phone and Address, or pick an existing member; the typed
   email is never matched on its own.
 - **Event sign-up to member**: built into `bookings`, which already requires `customers`. Every public sign-up
-  creates a new member record; staff use "Change customer" on the booking page to move the sign-up onto the existing
-  member, as [Changing a booking's customer](../shapes/bookings.md#changing-a-bookings-customer) describes. The extra
+  creates a new person; staff use "Change customer" on the booking page to move the sign-up onto the existing member,
+  as [Changing a booking's customer](../shapes/bookings.md#changing-a-bookings-customer) describes. The extra
   record stays. Matching sign-ups to members by email waits for sign-in or email confirmation.
 - **Donation to member**: none needed. A donation is a document addressed to the member or donor.
 
 ## Membership
 
-Membership has no shape yet: schmeide/template#58 adds levels and dated periods, with current, due and lapsed worked
-out from the dates, and schmeide/template#61 is the link that bills a period's dues onto an invoice. Until then, add
-these to members by hand, in `backend/src/db/schema/customers.ts` and the `CustomerFields` inputs:
+The [membership](../shapes/membership.md) shape holds it: levels with a fee and a length, and one dated period per
+year a member pays for, with current, due for renewal and lapsed worked out from the dates. Give Life a level with no
+length. "Renew" on a member adds the next period, from the day after the current one ends, or from today once it has
+lapsed.
 
-- **Level**: a choice of the club's levels (Adult, Junior, Family, Life), empty for donors and event guests.
-- **Joined on** and **Paid until**: dates. A member whose paid until date has passed is lapsed; show it on the list.
-
-Renewing is then: make a dues invoice by hand, and move paid until on a year once it is paid.
+Billing a period's dues onto an invoice is a link not built yet (schmeide/template#61). Until then, renewing is: add
+the period, then make a dues invoice by hand at the fee the period shows.
 
 ## Vocabulary and fields
 
-- Customer becomes member, resource becomes venue, service becomes event or session, "Book online" becomes "Sign up",
+- Customer becomes person, resource becomes venue, service becomes event or session, "Book online" becomes "Sign up",
   invoice becomes dues, "Requests" becomes "Forms" in `requests.shape.json` and the copy in `frontend/src/requests/`.
 - Events: add a price to services when events are paid for, as
   [What usually varies](../shapes/bookings.md#what-usually-varies) describes.
