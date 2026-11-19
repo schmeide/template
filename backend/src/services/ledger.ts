@@ -54,9 +54,10 @@ export const updateAccount = async (
 
 // Inserts an entry while holding its account row locked, so two writers to one account queue and
 // each checks the floor against a balance that includes the other's entry. A decrease that would
-// take the balance below the floor is refused; an increase is always allowed.
+// take the balance below the floor is refused; an increase is always allowed. Inside another
+// transaction it runs as a savepoint of it.
 const append = (
-  db: Db,
+  db: Db | Tx,
   accountId: number,
   build: (
     tx: Tx
@@ -82,7 +83,7 @@ const append = (
     return entry;
   });
 
-export const addEntry = (db: Db, { accountId, ...input }: Readonly<NewEntry>) =>
+export const addEntry = (db: Db | Tx, { accountId, ...input }: Readonly<NewEntry>) =>
   append(db, accountId, () => Promise.resolve(input));
 
 const findEntry = async (tx: Tx | Db, id: number) => {

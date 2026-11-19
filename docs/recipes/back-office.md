@@ -12,7 +12,8 @@ the app.
 - **Requests**, the home page, from [requests](../shapes/requests.md), which ships with leave. Follow
   [Turning leave requests into another app](../shapes/requests.md#turning-leave-requests-into-another-app) and keep
   Leave beside the new types:
-  - "Leave": add "Days" (a required number, whole days), which the leave balance link takes off the balance.
+  - "Leave": add "Days" (a required number, whole days), which the leave balance link takes off the balance. Keep
+    the "Kind of leave" and "First day" labels as they are: the link reads them by name.
   - "Expense claim": amount as a number, date, what for as text, and a choice of cost type.
   - "New starter checklist" and "Leaver checklist": one pass or fail field per step (contract signed, laptop
     issued, accounts opened; laptop returned, accounts closed). The person handling the start or the leave files one
@@ -60,14 +61,15 @@ and the Staff page lists every person in `approval_people` with their entry wher
 
 ## Links between them
 
-Not built yet. It is a shape of its own that requires both sides, and it has an issue. Until it exists, whoever
-approves leave records an `out` entry on the person's balance by hand, with the request's number as the reference.
-
-- **Approved leave to balance** (`requests` and `stock`, schmeide/template#56): a link table maps a person and a kind
-  of leave to a ledger account. On an approved leave request, "Take off balance" records an `out` entry of the
-  request's days on that account, dated its first day. A request posts once, enforced by a unique request id in a
-  link table and a lock on the request row. Kinds with no account (sick, unpaid) draw on nothing. Reversing the entry
-  does not free the request.
+- **Approved leave to balance**, from [leave-balance](../shapes/leave-balance.md) (`requests` and `stock`), kept
+  last in the recipe. On a leave request, "Choose Ana's leave balances" sets the balance each kind of leave draws on
+  for the person, picked from the leave balances; kinds left with no balance (sick, unpaid) draw on nothing. On an
+  approved request, "Take off balance" records an `out` entry of the request's "Days" on that balance, dated its
+  first day, with the request's number as the reference, and the request and the balance link to each other. A
+  request posts once, enforced by a lock on the request row and a unique request id in the link table. The entry
+  goes through the stock service, and with "Allow stock below zero" on, leave taken in advance shows as a negative
+  balance instead of being refused. Reversing the entry does not free the request; a correction is a new entry by
+  hand.
 
 `assets` and `handbook` need no link: the asset owner and the handbook reader are matched to staff by name.
 
