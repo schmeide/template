@@ -22,9 +22,10 @@ The menu follows this order; `customers` comes last, right after the first shape
   tenant is home) with public intake on, for tenants, and "Inspection" (one pass or fail field per room or item),
   filled in at move-in, move-out and periodic visits. Name the property manager as the approver: approving a request
   means the repair will be done.
-- **Rent**, from [invoices](../shapes/invoices.md). A rent invoice is an ordinary invoice to the tenant, with a line
-  for the period's rent and a line for each other charge (a repair the tenant caused, a service charge). Payments are
-  recorded on it as they arrive, and a sent invoice past its due date shows as overdue, which is the arrears list.
+- **Rent**, from [invoices](../shapes/invoices.md). A rent invoice is an ordinary invoice to the tenant, made by the
+  rent link below with a line for the period's rent; add a line for each other charge (a repair the tenant caused, a
+  service charge). Payments are recorded on it as they arrive, and a sent invoice past its due date shows as overdue,
+  which is the arrears list.
 - **Tenants**, from [customers](../shapes/customers.md): rename it as
   [What usually varies](../shapes/customers.md#what-usually-varies) describes, and add the fields below.
 
@@ -37,14 +38,15 @@ tenant's record is a change to `invoices` (see below).
 
 ## Links between them
 
-Each link is a shape of its own. [Leases](../shapes/leases.md) joins units and tenants and is built (above). The two
-below are not built yet, and each has an issue. Until they exist, staff carry the details across by hand: rent
-invoices are made by hand each month, and the unit is named in the request's answers.
+Each link is a shape of its own. [Leases](../shapes/leases.md) joins units and tenants and is built (above), and so is
+the rent link. The request link is not built yet and has an issue; until it exists, staff name the unit in the
+request's answers.
 
-- **Lease to rent invoices** (the lease shape and `invoices`, schmeide/template#59): "Bill rent up to a date" makes a
-  draft invoice for each rent period due, one per lease and period, enforced by a unique lease and period in a link
-  table and a lock on the lease row. Monthly periods keep the lease's day of the month, clamped to the month's end.
-  Voiding the invoice frees the period to be billed again.
+- **Lease to rent invoices**, [lease-rent](../shapes/lease-rent.md) (`leases` and `invoices`): Bill rent (`#/rent`)
+  makes a draft invoice for each rent period due up to a day, one per lease and period, for the tenant at the lease's
+  rent and due on the period's first day. Monthly periods keep the lease's day of the month, clamped to the month's
+  end. Voiding the invoice frees the period to be billed again. The lease page lists its rent invoices, and each
+  invoice names its lease and period. Prorate a short last period by editing the draft.
 - **Maintenance request to unit** (`requests` and `assets`, schmeide/template#60): staff choose the unit a request is
   about, and the unit lists its requests as its maintenance history. A request has at most one unit. The public form
   stays as it is and shows nothing about units.

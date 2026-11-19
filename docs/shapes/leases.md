@@ -16,6 +16,8 @@ Leases (`#/leases`). It is built for [property management](../recipes/property.m
 - **Add a lease**: pick a unit and a tenant, the days, the rent and the deposit.
 - **A lease page** (`#/leases/<id>`): its terms to edit, "End lease" on a day, and "Cancel lease" before it starts.
   Everything but the unit can be edited; a lease on the wrong unit is cancelled and added again.
+- **Slot**: the lease page renders `<Slots name="lease" id={id} />` at its end, where link shapes add their views.
+  With no link shape kept it renders nothing.
 
 Rent and deposit are typed and shown through the money shape's `parseScaled` and `formatMoney`, in the currency in
 `frontend/src/leases/format.ts`.

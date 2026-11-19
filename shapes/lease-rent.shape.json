@@ -1,0 +1,27 @@
+{
+  "requires": ["leases", "invoices"],
+  "files": [
+    "backend/src/db/schema/rentCharges.ts",
+    "backend/src/services/rentCharges.ts",
+    "backend/src/services/__tests__/rentCharges.test.ts",
+    "backend/src/routers/rentCharges.ts",
+    "backend/src/routers/__tests__/rentCharges.test.ts",
+    "frontend/src/rentCharges/",
+    "docs/shapes/lease-rent.md"
+  ],
+  "routers": [
+    { "key": "rentCharges", "name": "rentChargesRouter", "from": "./routers/rentCharges.ts" }
+  ],
+  "pages": [
+    {
+      "path": "rent",
+      "title": "Bill rent",
+      "name": "BillRent",
+      "from": "./rentCharges/RentCharges.tsx"
+    }
+  ],
+  "slots": [
+    { "slot": "lease", "name": "LeaseCharges", "from": "./rentCharges/RentCharges.tsx" },
+    { "slot": "invoice", "name": "InvoiceRent", "from": "./rentCharges/RentCharges.tsx" }
+  ]
+}
