@@ -52,6 +52,9 @@ same shape with a different unit, entry kinds and floor.
 - **Whether entries feed a document,** such as time and expenses onto an invoice. That is the
   [entries-invoice](entries-invoice.md) link shape, which requires this one and the invoices shape and owns the code
   that turns entries into invoice lines.
+- **Whether orders take from stock,** with an `out` entry per item when an order is fulfilled. That is the
+  [order-stock](order-stock.md) link shape, which requires this one and the orders shape and maps each product to
+  the items it uses.
 
 ## Turning stock into time tracking
 

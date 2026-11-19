@@ -54,6 +54,29 @@ describe("App", () => {
     expect(screen.queryByText("Elsewhere")).not.toBeInTheDocument();
   });
 
+  it("renders the page's fallback only when no view fills the slot", () => {
+    const host: Page = {
+      path: "orders",
+      title: "Orders",
+      Component: () => (
+        <Slots name="order-fulfillment" id={7} fallback={<button type="button">Own</button>} />
+      ),
+    };
+
+    const { unmount } = render(<App pages={[host]} />);
+    expect(screen.getByRole("button", { name: "Own" })).toBeInTheDocument();
+    unmount();
+
+    render(
+      <App
+        pages={[host]}
+        slots={[{ slot: "order-fulfillment", Component: () => <p>Replaced</p> }]}
+      />
+    );
+    expect(screen.getByText("Replaced")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Own" })).not.toBeInTheDocument();
+  });
+
   it("opens the page named in the address", () => {
     act(() => {
       window.location.hash = "#/customers";

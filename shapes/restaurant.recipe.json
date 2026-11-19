@@ -1,1 +1,4 @@
-{ "title": "Restaurant, cafe or takeaway", "shapes": ["bookings", "orders", "stock"] }
+{
+  "title": "Restaurant, cafe or takeaway",
+  "shapes": ["bookings", "orders", "stock", "order-stock"]
+}

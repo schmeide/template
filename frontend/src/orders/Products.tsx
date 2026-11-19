@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Slots } from "../App.tsx";
 import { formatMoney } from "../money/money.ts";
 import { useTRPC } from "../trpc.ts";
 import { focusOnMount } from "./format.ts";
@@ -55,6 +56,7 @@ export function Products({ editing }: { readonly editing?: number }) {
           categories={categories}
           onSaved={() => window.location.assign("#/orders/products")}
         />
+        <Slots name="product" id={product.id} />
         <p>
           <a href="#/orders/products">Back to products without saving</a>
         </p>

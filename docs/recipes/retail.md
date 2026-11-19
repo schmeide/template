@@ -36,17 +36,15 @@ comes right after `invoices`, the first shape that requires it.
 
 ## Links between them
 
-None of these is built yet. Each is a shape of its own that requires both sides, and each has an issue. Until they
-exist, staff carry the details across by hand: they record an "out" entry per line with the order's reference when
-they fulfill it, and type a wholesale order onto an invoice.
+Each link is a shape of its own that requires both sides. Order to stock is built and kept; order to invoice is not
+built yet and has an issue. Until it exists, staff type a wholesale order onto an invoice by hand.
 
-- **Order to stock** (`orders` and `stock`, schmeide/template#63): each product maps to the stock items it uses and
-  how many (one row with quantity 1 for a stocked product; none for a product that is not stocked). Fulfilling a
-  `ready` order goes through the link: in one transaction it locks the order and every stock item it uses (in id
-  order), writes one "out" entry per item with the order's reference, records the order as issued and moves it to
-  `fulfilled`. An order is issued once, enforced by a unique order id and the lock. If any item would go below its
-  floor, nothing is written and the order stays `ready`. An order cannot be cancelled once fulfilled, so there is
-  nothing to reverse; a return is an "in" entry recorded by hand.
+- **Order to stock**, from [order-stock](../shapes/order-stock.md): on each product's page in Orders → Products, staff
+  list the stock items it uses and how many (one row with quantity 1 for a stocked product; none for a product that
+  is not stocked). "Mark fulfilled" on a `ready` order writes one "out" entry per item with the order's reference and
+  fulfills the order, all at once, and only once. If any item would go below its floor, nothing is written, the order
+  stays `ready` and the message names the item. An order cannot be cancelled once fulfilled, so there is nothing to
+  reverse; a return is an "in" entry recorded by hand.
 - **Order to invoice** (`orders` and `invoices`, schmeide/template#64): on a fulfilled order, staff pick or create the
   customer (prefilled by matching the order's email), and the link makes a draft invoice with one line per order line
   (name, count times 1000 as the quantity, unit price and tax rate). An order has at most one invoice that is not

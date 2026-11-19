@@ -72,6 +72,11 @@ shape that may be pruned. So a page exposes a **slot**, and a link shape fills i
   other shapes may add to its view. The name is the record whose id it passes: `quote`, `invoice`, `deal`. The
   shape's doc lists its slots. With nothing in a slot it renders nothing, so the page needs no change when a link is
   pruned.
+- **A slot may replace one of the page's own controls** when a link must change what that control does: the page
+  passes the control as `fallback`, which renders only while no view fills the slot. The orders page renders its
+  "Mark fulfilled" button as `<Slots name="order-fulfillment" id={id} fallback={button} />`, and `order-stock`
+  fills it with a "Mark fulfilled" that takes the order out of stock. Such a slot is named for the action, not the
+  record. The page's own server procedure stays; the link's view only stops the page offering it.
 - **The link shape fills it.** Its manifest lists `slots`, one entry per view:
   `{ "slot": "quote", "name": "QuoteConversion", "from": "./conversions/Conversion.tsx" }`. The view takes only
   `{ id }` and fetches the rest itself through its own router, or through the joined shape's router, which it may

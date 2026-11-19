@@ -17,6 +17,8 @@ import {
 } from "../db/schema/catalog.ts";
 import { lineAmounts, totals } from "./money.ts";
 
+type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
+
 // Every price is in this currency. Edit for the project.
 export const currency = "USD";
 
@@ -210,7 +212,7 @@ export const listOrders = async (db: Db, { status }: { readonly status?: OrderSt
 // Moves an order on if `to` is allowed from where it stands now. The update names the statuses it
 // may move from, so of two staff acting at once the second matches nothing and is refused.
 export const setOrderStatus = async (
-  db: Db,
+  db: Db | Tx,
   id: number,
   to: OrderStatus
 ): Promise<Order | "not allowed" | undefined> => {
