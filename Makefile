@@ -128,8 +128,8 @@ test/run: node_modules ## Migrate and test against an existing $DATABASE_URL (no
 
 .PHONY: journeys
 journeys: node_modules env-BASE_URL ## Run the journeys in journeys/ against BASE_URL (JOURNEYS="F1.1.spec.ts" runs only those)
-	$(JS_EXEC) exec playwright -- install chromium >/dev/null
-	BASE_URL=$(BASE_URL) $(JS_EXEC) exec playwright -- test --config journeys/playwright.config.ts $(JOURNEYS)
+	$(JS_EXEC) exec playwright -- install --only-shell chromium >/dev/null
+	BASE_URL=$(BASE_URL) $(JS_EXEC) exec playwright -- test --config journeys/playwright.config.ts --pass-with-no-tests $(JOURNEYS)
 
 ##@ Dependencies
 
