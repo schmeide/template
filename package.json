@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "1.65.1",
     "@types/node": "^26.6.6",
     "@vitest/eslint-plugin": "^1.6.28",
     "concurrently": "^10.0.7",

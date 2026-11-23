@@ -5,7 +5,8 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["**/dist/**", "**/coverage/**", "**/node_modules/**"] },
+  // journeys/*.spec.ts are written by Schmeide, not edited by hand (AGENTS.md).
+  { ignores: ["**/dist/**", "**/coverage/**", "**/node_modules/**", "journeys/*.spec.ts"] },
   eslint.configs.recommended,
   tseslint.configs.recommended,
   {

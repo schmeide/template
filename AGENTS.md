@@ -84,6 +84,7 @@ UI, follow `.claude/skills/interface-review/SKILL.md`.
 | `make db/generate NAME=x` | Generate a migration from `backend/src/db/schema/`        |
 | `make db/migrate`         | Apply migrations to `$DATABASE_URL`                       |
 | `make serve` / `make up`  | Run the app (the developer or platform does this)         |
+| `make journeys BASE_URL=` | Run the journeys in `journeys/` against a running app     |
 
 ## Development assumptions
 
@@ -198,6 +199,15 @@ text: varchar("text", { length: 500 }),
 4. Refactor with the tests still passing.
 
 For a pure refactor, run the existing tests before and after.
+
+## Journeys (do not edit)
+
+- `journeys/` holds the app's journeys: one Playwright test per acceptance
+  check, `<check id>.spec.ts`, written by Schmeide's tester from what it did in
+  the running app. Schmeide runs them all against the app on every change.
+- Never add, change, or delete anything under `journeys/`. Schmeide refuses a
+  build that does. A journey that no longer fits the app is rewritten by the
+  tester, not by you.
 
 ## Testing rules
 

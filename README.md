@@ -37,6 +37,7 @@ Run `make` to see every target.
 | `frontend/nginx.conf`     | Serves the frontend and proxies `/api` to the backend               |
 | `compose.yaml`            | `db`, `migrate`, `backend`, `web`; `dev-db` and `test-db` profiles  |
 | `**/__tests__/*.test.ts*` | Vitest specs next to the code they test                             |
+| `journeys/`               | Playwright journeys Schmeide's tester writes, one per check         |
 
 ## Make targets
 
@@ -50,6 +51,7 @@ make db/migrate     # apply migrations to $DATABASE_URL
 make test           # throwaway Postgres, migrate, run all tests, tear down
 make test/watch     # same, in watch mode
 make test/run       # migrate and test against an existing $DATABASE_URL (no Docker)
+make journeys       # run the journeys in journeys/ against BASE_URL=... (JOURNEYS=... for some)
 make build          # typecheck everything and bundle frontend/dist
 make check          # ESLint, tsc, Prettier, markdownlint, check/migrations
 make check/migrations  # migrations only add to the database (BASE=<commit>)

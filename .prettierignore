@@ -5,3 +5,4 @@ coverage/
 package-lock.json
 backend/drizzle/meta/
 .claude/skills/
+journeys/*.spec.ts
