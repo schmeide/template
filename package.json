@@ -19,11 +19,11 @@
     "lint:eslint": "eslint .",
     "lint:types": "tsc -p backend && tsc -p frontend && tsc -p scripts",
     "lint:prettier": "prettier --check .",
-    "lint:md": "markdownlint-cli2 \"**/*.md\" \"!**/node_modules/**\" \"!.claude/skills/**\"",
+    "lint:md": "markdownlint-cli2 \"**/*.md\" \"!**/node_modules/**\" \"!.claude/skills/**\" \"!test-results/**\"",
     "lint": "concurrently -m1 npm:lint:*",
     "fix:eslint": "eslint . --fix",
     "fix:prettier": "prettier --write .",
-    "fix:md": "markdownlint-cli2 --fix \"**/*.md\" \"!**/node_modules/**\" \"!.claude/skills/**\"",
+    "fix:md": "markdownlint-cli2 --fix \"**/*.md\" \"!**/node_modules/**\" \"!.claude/skills/**\" \"!test-results/**\"",
     "fix": "concurrently -m1 npm:fix:*"
   },
   "devDependencies": {
